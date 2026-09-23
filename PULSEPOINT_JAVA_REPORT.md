@@ -37,49 +37,53 @@ The evaluation was conducted by constructing a complete, functioning Task Manage
 
 ## 2. Architecture & Wire Protocol Analysis
 
-### The Monolithic Architecture
+#### The Monolithic Architecture
 
 ```
                   ┌────────────────────────────────────────┐
                   │                 BROWSER                │
                   │  Thymeleaf Outer Host + PulsePoint v2  │
-                  └───────────────────┬────────────────────┘
-                                      │
-                         RPC over HTTP POST (X-PP-RPC: true)
-                         Session Cookie + X-CSRF-Token
-                                      ▼
-                  ┌────────────────────────────────────────┐
-                  │          SPRING BOOT MONOLITH          │
-                  │                                        │
-                  │  ┌──────────────────────────────────┐  │
-                  │  │       PulsePointCsrfFilter       │  │ (Sets pp_csrf cookie)
-                  │  └──────────────────┬───────────────┘  │
-                  │                     │                  │
-                  │  ┌──────────────────▼───────────────┐  │
-                  │  │          Spring Security         │  │ (Session Auth & CSRF)
-                  │  └──────────────────┬───────────────┘  │
-                  │                     │                  │
-                  │  ┌──────────────────▼───────────────┐  │
-                  │  │        PulsePointRpcFilter       │  │ (Wire Protocol Dispatch)
-                  │  └──────────────────┬───────────────┘  │
-                  │                     │                  │
-                  │  ┌──────────────────▼───────────────┐  │
-                  │  │         TaskRpcRegistrar         │  │ (Registered Methods)
-                  │  └──────────────────┬───────────────┘  │
-                  │                     │                  │
-                  │  ┌──────────────────▼───────────────┐  │
-                  │  │     TaskService (Business API)   │  │ (Validation & Rules)
-                  │  └──────────────────┬───────────────┘  │
-                  │                     │                  │
-                  │  ┌──────────────────▼───────────────┐  │
-                  │  │     TaskRepository (JPA)         │  │
-                  │  └──────────────────┬───────────────┘  │
-                  └─────────────────────┼──────────────────┘
-                                        │
-                                        ▼
-                               ┌─────────────────┐
-                               │   PostgreSQL    │
-                               └─────────────────┘
+                  └────────┬───────────┬───────────┬───────┘
+                           │           │           │
+         RPC (POST + X-PP-RPC)        SSE         WebSocket (pp.socket)
+         Session + X-CSRF-Token        │      /__pulsepoint/ws?name=tasks
+                           │           │           │
+                           ▼           ▼           │
+                  ┌────────────────────────────────┼───────┐
+                  │          SPRING BOOT MONOLITH  │       │
+                  │                                │       │
+                  │  ┌───────────────────────────┐ │       │
+                  │  │    PulsePointCsrfFilter   │ │       │ (Sets pp_csrf cookie)
+                  │  └─────────────┬─────────────┘ │       │
+                  │                │               │       │
+                  │  ┌─────────────▼─────────────┐ │       │
+                  │  │       Spring Security     │ │       │ (Session Auth & CSRF)
+                  │  └─────────────┬─────────────┘ │       │
+                  │                │               │       │
+                  │  ┌─────────────▼─────────────┐ │       │
+                  │  │     PulsePointRpcFilter   │ │       │ (RPC & SSE Dispatcher)
+                  │  └─────────────┬─────────────┘ │       │
+                  │                │               │       │
+                  │  ┌─────────────▼─────────────┐ │       │
+                  │  │      TaskRpcRegistrar     │ │       │
+                  │  └──────┬──────────────┬─────┘ │       │
+                  │         │              │       ▼       │
+                  │         │              │   WebSocket   │ (PulsePointWebSocketHandler)
+                  │         │              └──►Broadcaster │ (TaskBroadcaster)
+                  │         ▼                      │       │
+                  │  ┌───────────────────────────┐ │       │
+                  │  │    TaskService (Business) │ │       │ (Validation & Rules)
+                  │  └─────────────┬─────────────┘ │       │
+                  │                │               │       │
+                  │  ┌─────────────▼─────────────┐ │       │
+                  │  │    TaskRepository (JPA)   │ │       │
+                  │  └─────────────┬─────────────┘ │       │
+                  └────────────────┼───────────────┴───────┘
+                                   │
+                                   ▼
+                          ┌─────────────────┐
+                          │   PostgreSQL    │
+                          └─────────────────┘
 ```
 
 ### Wire Protocol Verification
@@ -88,10 +92,13 @@ The evaluation was conducted by constructing a complete, functioning Task Manage
 |---|---|---|
 | **RPC Endpoint** | POST to current route URL | Intercepted cleanly by `PulsePointRpcFilter` without requiring manual `@PostMapping` on controllers. |
 | **Function Identification** | `X-PP-Function: <name>` header | Lookup in concurrent Java registry; returns 404 JSON envelope if absent. |
-| **Request Payload** | JSON object or empty | Parsed via Jackson `ObjectMapper` into parameter maps. |
+| **Request Payload** | JSON object or multipart form | Parsed via Jackson `ObjectMapper` or `MultipartHttpServletRequest`. |
 | **Success Response** | Status 200 + `application/json` | DTOs serialized to JSON; `response.getWriter().flush()` guarantees full stream delivery. |
 | **Error Response** | Non-2xx + `{ "error": ..., "errors": {} }` | `GlobalExceptionHandler` and `SecurityConfig` return RFC-style JSON error payloads. |
 | **CSRF Validation** | Cookie: `pp_csrf`, Header: `X-CSRF-Token` | Bridged via `CookieCsrfTokenRepository` configured with custom names. |
+| **SSE Streaming** | POST + `Accept: text/event-stream` | Intercepted by filter; emits `data: <json>\n\n` chunks flushed sequentially. Consumed via `onStream` and `onStreamComplete`. |
+| **WebSocket Channel** | `/__pulsepoint/ws?name=<channel>` | Managed by `PulsePointWebSocketHandler`. Responds to `{"__pp": "ping"}` heartbeat with `{"__pp": "pong"}` and broadcasts task mutations across open tabs. |
+| **Multipart Upload** | `multipart/form-data` with `file` | Handled by `PulsePointRpcFilter` via Spring `StandardServletMultipartResolver` with client `onUploadProgress`. |
 
 ---
 
@@ -131,20 +138,33 @@ The evaluation was conducted by constructing a complete, functioning Task Manage
 
 ## 5. Live Browser End-to-End Test Execution
 
-A complete automated browser test was performed using Antigravity IDE's interactive browser testing suite:
+The complete 7-step interactive browser test suite was executed in an interactive Chromium engine on `http://localhost:8080`, exercising every layer of the monolith without page reloads or console errors:
 
-1. **Authentication Session:** Logged in via `/login` with `demo` / `demo123`, establishing authenticated session cookie and `pp_csrf` token.
-2. **Initial Task Hydration:** PulsePoint component initialized and populated 45 records via `listTasks` RPC call.
-3. **Reactive Task Creation:** Form submitted task #46 (`Automated Browser E2E Task`) via `pp.rpc("createTask", ...)`. Task count incremented 45 ➔ 46 dynamically without full page reload.
-4. **Status Mutation via RPC:** Status transitioned from `TODO` to `IN_PROGRESS` via `updateTask` RPC. Status badge updated with zero page flicker.
-5. **Reactive State Filtering:** Filter tabs (`ALL`, `TODO`, `IN_PROGRESS`, `DONE`) dynamically sorted and rendered tasks using `pp.state` without network requests.
-6. **Reactive Deletion via RPC:** Task #46 was deleted via `deleteTask` RPC, reconciling the DOM list and decrementing count back to 45.
-7. **Session Recording:** Full visual verification recorded and validated (`task_full_e2e_test_1790150651004.webp`).
-8. **Jakarta Bean Validation & Field-Level Errors:**
-   - **Empty Title Check:** Caught by `@NotBlank`, returned `{ "error": "Validation failed", "errors": { "title": ["Title is required"] } }`. Inline field error rendered beneath title input (**PASS**).
-   - **Max Length Check (>200 chars):** Caught by `@Size(max=200)`, returned `"Title must not exceed 200 characters"` (**PASS**).
-   - **Validation Recovery:** Valid task creation cleared all red error indicators immediately and prepended Task #49 (**PASS**).
-   - **Validation Recording:** Captured in `task_validation_tests_1790152840219.webp`.
+| # | Feature / Test Case | Actions & Triggers | Observations & Result | Status |
+|---|---------------------|--------------------|------------------------|:------:|
+| **1** | **Authentication** | Navigated to `/login`, authenticated with `demo` / `demo123`. | Auto-redirected to `/tasks`. Header displayed `User: DEMO`. | **PASS** |
+| **2** | **Initial State & Filtering** | Inspected top badges and clicked `TODO`, `IN PROGRESS`, `DONE`, `ALL`. | Initial tasks loaded via RPC. `● Live Sync: Connected` active. Client-side filtering operated instantly without network round-trips. | **PASS** |
+| **3** | **Validation & Error Handling (RPC)** | Submitted empty title, then 210-character title, then `"AGY IDE E2E Test Task"`. | Server Bean Validation rejected invalid inputs with top red banner and inline warnings. Valid task cleared errors and prepended to DOM. | **PASS** |
+| **4** | **Status Mutation & Deletion (RPC)** | Toggled `"AGY IDE E2E Test Task"` to `IN PROGRESS` then `DONE`. Clicked `Delete`. | Status badge mutated dynamically with zero page flicker. Task removed from DOM and total counter decremented upon deletion. | **PASS** |
+| **5** | **Server-Sent Events (SSE) Streaming** | Clicked `⚡ Audit (SSE)` on Task #1. | Real-time card appeared, streaming progress (25% → 50% → 75% → 100%) and step messages via `text/event-stream`. | **PASS** |
+| **6** | **Multipart File Upload with Progress** | Clicked `📎 Attach`, selected `test-attachment.txt`. | Upload progress bar tracked upload chunks via `onUploadProgress`, finishing at 100% with green success notice. | **PASS** |
+| **7** | **Multi-Tab WebSocket Live Sync** | Opened Tab 2. Created `"WebSocket Sync Task"` in Tab 1. Checked Tab 2. | Tab 2 dynamically received `TASK_CREATED` over `ws://` and rendered the new task without any manual reload. | **PASS** |
+
+### Visual Verification Artifacts
+
+- **Form Validation & Dynamic Creation:**
+  - Empty title validation: [`docs/screenshots/empty_title_validation_1790160129534.png`](docs/screenshots/empty_title_validation_1790160129534.png)
+  - Valid task created: [`docs/screenshots/valid_task_creation_1790160337821.png`](docs/screenshots/valid_task_creation_1790160337821.png)
+- **Status Mutation & Deletion:**
+  - Status mutation and deletion: [`docs/screenshots/status_mutation_and_deletion_1790161888799.png`](docs/screenshots/status_mutation_and_deletion_1790161888799.png)
+- **Real-Time SSE Audit Streaming:**
+  - Sequential audit stream: [`docs/screenshots/sse_audit_stream_1790162251926.png`](docs/screenshots/sse_audit_stream_1790162251926.png)
+- **Multipart Upload with Progress:**
+  - File upload byte transmission: [`docs/screenshots/file_upload_progress_1790162452519.png`](docs/screenshots/file_upload_progress_1790162452519.png)
+- **Multi-Tab WebSocket Live Sync:**
+  - Live broadcast synchronization: [`docs/screenshots/websocket_live_sync_1790163508917.png`](docs/screenshots/websocket_live_sync_1790163508917.png)
+- **Complete Session Video:**
+  - Full interactive recording: [**`full_interactive_verification_1790159186402.webp`**](docs/screenshots/full_interactive_verification_1790159186402.webp)
 
 ---
 
@@ -152,4 +172,10 @@ A complete automated browser test was performed using Antigravity IDE's interact
 
 PulsePoint v2 is a **practical, highly viable frontend solution for Java and Spring Boot developers**. It eliminates the complexity, dependency bloat, and build maintenance of modern JavaScript toolchains while delivering the smooth, instantaneous interactivity of a single-page app.
 
-With the reusable Java integration classes created in this project (`PulsePointRpcFilter`, `PulsePointRpcRegistry`, and `PulsePointCsrfFilter`), Java developers can adopt PulsePoint into any Spring Boot application with minimal setup.
+With the reusable Java integration classes created in this project:
+- **`PulsePointRpcFilter`**: Handles standard RPC, SSE streaming, and multipart uploads.
+- **`PulsePointRpcRegistry`**: Type-safe registration of Java business functions.
+- **`PulsePointCsrfFilter`**: Seamless Spring Security CSRF cookie-to-header bridging.
+- **`PulsePointWebSocketHandler` & `TaskBroadcaster`**: Resilient real-time synchronization with heartbeat management.
+
+Java developers can adopt PulsePoint into any Spring Boot application with minimal setup and no Node.js infrastructure.

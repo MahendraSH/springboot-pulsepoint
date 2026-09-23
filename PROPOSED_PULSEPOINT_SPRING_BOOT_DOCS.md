@@ -265,3 +265,150 @@ Author your templates as standard HTML wrapped in `<template pp-component="id">`
 2. **Always Quote Attribute Expressions**: Write `key="{task.id}"` and `class="badge {task.status}"`. Unquoted braces (`key={task.id}`) break HTML parsing.
 3. **Always Flush Response Writers**: When writing JSON directly via `objectMapper.writeValue(response.getWriter(), ...)`, always invoke `response.getWriter().flush()`.
 4. **Cache Event Targets Prior to Await**: Native browser events may clear `event.currentTarget` after an asynchronous promise resolution. Save `const form = event.currentTarget;` before any `await pp.rpc(...)`.
+
+---
+
+## 7. Server-Sent Events (SSE) Streaming
+
+PulsePoint supports progressive streaming RPC responses via `onStream`:
+
+```javascript
+await pp.rpc("streamAudit", { id: 1 }, {
+    onStream: (chunk) => {
+        console.log("Progress:", chunk.percent, chunk.step);
+    },
+    onStreamComplete: (finalResult) => {
+        console.log("Done:", finalResult);
+    },
+    onStreamError: (err) => {
+        console.error("Stream error:", err);
+    }
+});
+```
+
+### Server-Side Implementation
+In Spring Boot, return a functional interface or stream emitter:
+
+```java
+@FunctionalInterface
+public interface PulsePointStream {
+    void execute(PulsePointStreamEmitter emitter) throws Exception;
+}
+
+public class PulsePointStreamEmitter {
+    private final PrintWriter writer;
+    private final ObjectMapper objectMapper;
+
+    public void emit(Object payload) throws IOException {
+        writer.write("data: " + objectMapper.writeValueAsString(payload) + "\n\n");
+        writer.flush();
+    }
+}
+```
+
+In your `PulsePointRpcFilter`:
+```java
+if (result instanceof PulsePointStream stream) {
+    response.setStatus(HttpServletResponse.SC_OK);
+    response.setContentType("text/event-stream;charset=UTF-8");
+    response.setHeader("Cache-Control", "no-cache");
+    response.setHeader("Connection", "keep-alive");
+    PulsePointStreamEmitter emitter = new PulsePointStreamEmitter(response.getWriter(), objectMapper);
+    stream.execute(emitter);
+    return;
+}
+```
+
+---
+
+## 8. Named WebSockets (`pp.socket`)
+
+PulsePoint provides named WebSocket channels via `pp.socket(name, args, handlers)`.
+
+```javascript
+const socket = pp.socket("tasks", {}, {
+    onOpen: (event) => console.log("WebSocket connected"),
+    onMessage: (data, event) => console.log("Received live broadcast:", data),
+    onClose: (event) => console.log("WebSocket disconnected")
+});
+```
+
+### Server Configuration
+Register the WebSocket endpoint with Spring:
+
+```java
+@Configuration
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer {
+    private final PulsePointWebSocketHandler webSocketHandler;
+
+    public WebSocketConfig(PulsePointWebSocketHandler webSocketHandler) {
+        this.webSocketHandler = webSocketHandler;
+    }
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(webSocketHandler, "/__pulsepoint/ws")
+                .setAllowedOrigins("*");
+    }
+}
+```
+
+### Handling the PulsePoint Ping/Pong Heartbeat
+PulsePoint clients send a heartbeat frame `{"__pp": "ping"}` every 25 seconds. If the server does not reply `{"__pp": "pong"}` within 45 seconds, the client disconnects:
+
+```java
+@Component
+public class PulsePointWebSocketHandler extends TextWebSocketHandler {
+    private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
+
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) {
+        sessions.add(session);
+    }
+
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String payload = message.getPayload().trim();
+        if (payload.contains("\"__pp\"") && payload.contains("\"ping\"")) {
+            session.sendMessage(new TextMessage("{\"__pp\":\"pong\"}"));
+            return;
+        }
+        // Handle custom client message
+    }
+
+    public void broadcast(String jsonPayload) {
+        TextMessage message = new TextMessage(jsonPayload);
+        for (WebSocketSession session : sessions) {
+            if (session.isOpen()) {
+                session.sendMessage(message);
+            }
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        sessions.remove(session);
+    }
+}
+```
+
+---
+
+## 9. Multipart File Uploads via RPC
+
+PulsePoint transparently handles `FormData` with files and supports upload progress monitoring:
+
+```javascript
+const formData = new FormData();
+formData.append("file", fileInput.files[0]);
+formData.append("taskId", 1);
+
+const result = await pp.rpc("uploadAttachment", formData, {
+    onUploadProgress: ({ loaded, total, percent }) => {
+        console.log(`Upload: ${percent}%`);
+    }
+});
+```
+
+In `PulsePointRpcFilter`, inspect multipart requests using Spring's `StandardServletMultipartResolver` to extract `MultipartFile` attachments cleanly while preserving CSRF tokens.

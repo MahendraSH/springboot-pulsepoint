@@ -82,10 +82,38 @@
                 </form>
             </div>
 
+            <!-- Real-Time SSE Audit Progress Card -->
+            <div class="card mb-4" hidden="{!isAuditing}" style="background-color: #1e293b; border: 1px solid #3b82f6; margin-bottom: 1.5rem; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #60a5fa;">⚡ Live SSE Task #{auditTaskId} Audit Stream</strong>
+                    <span style="color: #60a5fa; font-weight: bold;">{auditPercent}%</span>
+                </div>
+                <div style="background-color: #334155; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem;">
+                    <div style="background-color: #3b82f6; height: 100%; width: 100%; transform-origin: left; transform: scaleX(calc({auditPercent} / 100)); transition: transform 0.3s ease;"></div>
+                </div>
+                <small style="color: #93c5fd;">{auditStep}</small>
+            </div>
+
+            <!-- Multipart File Upload Progress Card -->
+            <div class="card mb-4" hidden="{!isUploading}" style="background-color: #1e293b; border: 1px solid #10b981; margin-bottom: 1.5rem; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="color: #34d399;">📎 Uploading Attachment to Task #{uploadTaskId}...</strong>
+                    <span style="color: #34d399; font-weight: bold;">{uploadProgress}%</span>
+                </div>
+                <div style="background-color: #334155; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background-color: #10b981; height: 100%; width: 100%; transform-origin: left; transform: scaleX(calc({uploadProgress} / 100)); transition: transform 0.2s ease;"></div>
+                </div>
+            </div>
+
+            <input type="file" id="task-file-input" style="display: none;" onchange="handleFileUpload(event)" />
+
             <!-- Task List Section -->
             <section class="task-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h2>Tasks (<span id="task-count">{tasks.length}</span>)</h2>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <h2>Tasks (<span id="task-count">{tasks.length}</span>)</h2>
+                        <span class="badge" style="background-color: #064e3b; color: #34d399; font-size: 0.75rem; border: 1px solid #059669;">● Live Sync: {liveSyncStatus}</span>
+                    </div>
                     
                     <!-- Status Filter Tabs -->
                     <div style="display: flex; gap: 0.5rem;">
@@ -132,8 +160,14 @@
                                     <button class="btn btn-outline btn-sm" hidden="{task.status === 'DONE'}" onclick="changeStatus(task.id, 'DONE')">DONE</button>
                                 </div>
 
-                                <!-- Delete Action -->
-                                <button class="btn btn-danger btn-sm" onclick="handleDeleteTask(task.id)">Delete</button>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <!-- Audit SSE Action -->
+                                    <button class="btn btn-outline btn-sm" style="border-color: #3b82f6; color: #60a5fa;" onclick="handleStreamAudit(task.id)">⚡ Audit (SSE)</button>
+                                    <!-- Attach File Action -->
+                                    <button class="btn btn-outline btn-sm" style="border-color: #10b981; color: #34d399;" onclick="promptUpload(task.id)">📎 Attach</button>
+                                    <!-- Delete Action -->
+                                    <button class="btn btn-danger btn-sm" onclick="handleDeleteTask(task.id)">Delete</button>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -150,6 +184,50 @@
                 const [successMessage, setSuccessMessage] = pp.state('');
                 const [titleError, setTitleError] = pp.state('');
                 const [descError, setDescError] = pp.state('');
+
+                // Multipart Upload state
+                const [uploadTaskId, setUploadTaskId] = pp.state(null);
+                const [uploadProgress, setUploadProgress] = pp.state(0);
+                const [isUploading, setIsUploading] = pp.state(false);
+
+                // SSE Streaming state
+                const [auditTaskId, setAuditTaskId] = pp.state(null);
+                const [auditPercent, setAuditPercent] = pp.state(0);
+                const [auditStep, setAuditStep] = pp.state('');
+                const [isAuditing, setIsAuditing] = pp.state(false);
+
+                // WebSocket Live Sync state
+                const [liveSyncStatus, setLiveSyncStatus] = pp.state('Connecting...');
+
+                // Initialize Named WebSocket for live multi-tab collaborative sync
+                pp.effect(() => {
+                    try {
+                        pp.socket("tasks", {}, {
+                            onOpen: () => {
+                                setLiveSyncStatus("Connected");
+                            },
+                            onMessage: (msg) => {
+                                if (!msg || typeof msg !== "object") return;
+                                if (msg.event === "TASK_CREATED" && msg.task) {
+                                    setTasks(prev => prev.some(t => t.id === msg.task.id) ? prev : [msg.task, ...prev]);
+                                    setSuccessMessage('⚡ Live Sync: Task #' + msg.task.id + ' created in another session');
+                                } else if (msg.event === "TASK_UPDATED" && msg.task) {
+                                    setTasks(prev => prev.map(t => t.id === msg.task.id ? msg.task : t));
+                                    setSuccessMessage('⚡ Live Sync: Task #' + msg.task.id + ' updated in another session');
+                                } else if (msg.event === "TASK_DELETED" && msg.id) {
+                                    setTasks(prev => prev.filter(t => t.id !== msg.id));
+                                    setSuccessMessage('⚡ Live Sync: Task #' + msg.id + ' deleted in another session');
+                                }
+                            },
+                            onClose: () => {
+                                setLiveSyncStatus("Disconnected");
+                            }
+                        });
+                    } catch (err) {
+                        console.warn("WebSocket connection error:", err);
+                        setLiveSyncStatus("Disconnected");
+                    }
+                }, []);
 
                 // Load initial tasks on mount via PulsePoint RPC
                 pp.effect(() => {
@@ -223,6 +301,72 @@
                     } catch (err) {
                         setErrorMessage(err.message || 'Failed to delete task');
                     }
+                };
+
+                const handleStreamAudit = async (taskId) => {
+                    setAuditTaskId(taskId);
+                    setAuditPercent(0);
+                    setAuditStep('Initiating SSE audit stream for task #' + taskId + '...');
+                    setIsAuditing(true);
+                    setErrorMessage('');
+                    try {
+                        await pp.rpc("streamTaskAudit", { taskId: taskId }, {
+                            onStream: (chunk) => {
+                                if (chunk && typeof chunk === "object") {
+                                    if (chunk.percent !== undefined) setAuditPercent(chunk.percent);
+                                    if (chunk.step) setAuditStep(chunk.step);
+                                }
+                            },
+                            onStreamComplete: () => {
+                                setAuditPercent(100);
+                                setAuditStep('Audit stream completed successfully. Task is healthy!');
+                                setTimeout(() => {
+                                    setIsAuditing(false);
+                                }, 3500);
+                            },
+                            onStreamError: (err) => {
+                                setAuditStep('Stream error: ' + (err.message || 'Stream interrupted'));
+                            }
+                        });
+                    } catch (err) {
+                        setAuditStep('Failed to stream audit: ' + (err.message || 'Error'));
+                    }
+                };
+
+                const promptUpload = (taskId) => {
+                    setUploadTaskId(taskId);
+                    const input = document.getElementById('task-file-input');
+                    if (input) input.click();
+                };
+
+                const handleFileUpload = async (event) => {
+                    const file = event.target.files[0];
+                    if (!file || !uploadTaskId) return;
+                    setIsUploading(true);
+                    setUploadProgress(0);
+                    setErrorMessage('');
+                    try {
+                        await pp.rpc("uploadTaskAttachment", {
+                            taskId: uploadTaskId,
+                            file: file,
+                            note: 'Attached via PulsePoint RPC'
+                        }, {
+                            onUploadProgress: ({ loaded, total, percent }) => {
+                                if (percent !== null) setUploadProgress(Math.round(percent));
+                            },
+                            onUploadComplete: () => {
+                                setUploadProgress(100);
+                                setSuccessMessage('File "' + file.name + '" uploaded successfully to Task #' + uploadTaskId);
+                                setTimeout(() => {
+                                    setIsUploading(false);
+                                }, 2500);
+                            }
+                        });
+                    } catch (err) {
+                        setErrorMessage('Upload failed: ' + (err.message || 'Error'));
+                        setIsUploading(false);
+                    }
+                    event.target.value = '';
                 };
 
                 // Computed filtered task list

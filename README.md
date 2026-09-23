@@ -69,7 +69,7 @@ Once started, open your browser at:
 
 ## 🧪 Testing & Verification
 
-### Automated Unit & Integration Tests (17 tests)
+### Automated Unit & Integration Tests (22 tests)
 
 Run the full automated test suite:
 
@@ -78,16 +78,24 @@ cd basic.sprinng.pulsepoint
 ./mvnw clean test
 ```
 
-- **`PulsePointRpcFilterTest`** (7 tests): RPC dispatching, JSON argument parsing, validation error envelopes, 404 function lookups, conflict handling.
+- **`PulsePointRpcFilterTest`** (9 tests): RPC dispatching, JSON argument parsing, validation error envelopes, 404 function lookups, conflict handling, SSE chunk emission, and multipart form upload handling.
+- **`PulsePointWebSocketHandlerTest`** (3 tests): WebSocket session lifecycle, ping/pong 25-second control frame heartbeat handling, and broadcast to open client sessions.
 - **`TaskServiceTest`** (6 tests): Database CRUD logic, status transitions, exception handling.
 - **`TaskControllerTest`** (3 tests): MVC route rendering and authentication redirects.
 - **`ApplicationTests`** (1 test): Spring application context health.
 
-### Browser End-to-End Verification
+### Interactive Browser End-to-End Verification (7/7 PASSED)
 
-The application was verified with live browser automation in an interactive Chromium environment:
-- **Full CRUD Lifecycle**: Verified creation, status updates, client filtering, and deletion without page reloads.
-- **Validation Suite**: Verified `@NotBlank`, `@Size` limits, inline error bindings, and form recovery.
+The application was completely verified in an interactive Chromium environment across 7 operational areas:
+1. **Authentication**: `/login` (user `demo`/`demo123`) ➔ authenticated session redirect to `/tasks`.
+2. **Initial State & Filtering**: Initial RPC load + instant client-side filtering via `pp.state` (`TODO`, `IN PROGRESS`, `DONE`, `ALL`).
+3. **Form Validation (RPC)**: Bean validation on empty and oversized titles, field-level inline errors, recovery on valid input.
+4. **Status Mutation & Deletion (RPC)**: Status toggles (`TODO` ➔ `IN_PROGRESS` ➔ `DONE`) and task deletion with immediate DOM reconciliation.
+5. **Server-Sent Events (SSE) Streaming**: Progressive task audit progress bar (25% ➔ 50% ➔ 75% ➔ 100%) streamed via `text/event-stream`.
+6. **Multipart File Uploads**: Real-time byte upload tracking via `onUploadProgress` to 100% and confirmation alert.
+7. **Multi-Tab WebSocket Live Sync**: Cross-tab real-time task synchronization over `ws://localhost:8080/__pulsepoint/ws?name=tasks` without page reloads.
+
+*Visual evidence, screenshots, and full session video recording are preserved in [`docs/screenshots/`](docs/screenshots/).*
 
 ---
 
@@ -97,7 +105,7 @@ Detailed architectural findings, issue catalog, and evaluation scorecards are in
 
 | Document | Description |
 |---|---|
-| [**`WALKTHROUGH.md`**](WALKTHROUGH.md) | Technical walkthrough of the architecture, components, and verification results. |
+| [**`WALKTHROUGH.md`**](WALKTHROUGH.md) | Technical walkthrough of the architecture, components, SSE, WebSockets, and verification results. |
 | [**`PULSEPOINT_JAVA_REPORT.md`**](PULSEPOINT_JAVA_REPORT.md) | Executive evaluation report answering key questions, comparing with HTMX/Vaadin, and assessing feasibility. |
 | [**`PULSEPOINT_JAVA_ISSUES.md`**](PULSEPOINT_JAVA_ISSUES.md) | Catalog of 6 discovered friction points & bugs with reproduction steps, root causes, workarounds, and proposed fixes. |
 | [**`PULSEPOINT_AGENTIC_TEST.md`**](PULSEPOINT_AGENTIC_TEST.md) | AI-agent usability evaluation matrix and a 14-dimension complexity assessment scorecard (scored 1–10). |
@@ -110,7 +118,7 @@ Detailed architectural findings, issue catalog, and evaluation scorecards are in
 ```text
 springboot-pulsepoint-basic-demo/
 ├── README.md                               # Project overview and quick start guide
-├── WALKTHROUGH.md                          # Implementation walkthrough
+├── WALKTHROUGH.md                          # Implementation walkthrough (RPC, SSE, WebSockets)
 ├── PULSEPOINT_JAVA_REPORT.md               # Main architectural evaluation report
 ├── PULSEPOINT_JAVA_ISSUES.md               # Catalog of 6 issues & workarounds
 ├── PULSEPOINT_AGENTIC_TEST.md              # AI-agent usability report & complexity scorecard
@@ -121,7 +129,7 @@ springboot-pulsepoint-basic-demo/
     └── src/
         ├── main/
         │   ├── java/basic/sprinng/pulsepoint/
-        │   │   ├── config/                 # SecurityConfig, JacksonConfig
+        │   │   ├── config/                 # SecurityConfig, JacksonConfig, WebSocketConfig
         │   │   ├── controller/             # TaskController (Thymeleaf views)
         │   │   ├── dto/                    # CreateTaskRequest, UpdateTaskRequest, TaskResponse
         │   │   ├── entity/                 # Task, TaskStatus, TaskPriority
@@ -131,6 +139,8 @@ springboot-pulsepoint-basic-demo/
         │   │   │   ├── PulsePointRpcRegistry.java
         │   │   │   ├── PulsePointCsrfFilter.java
         │   │   │   ├── PulsePointValidationException.java
+        │   │   │   ├── stream/             # PulsePointStream, PulsePointStreamEmitter
+        │   │   │   ├── websocket/          # PulsePointWebSocketHandler, TaskBroadcaster
         │   │   │   └── handler/TaskRpcRegistrar.java
         │   │   ├── repository/             # TaskRepository (Spring Data JPA)
         │   │   └── service/                # TaskService and TaskServiceImpl
@@ -142,5 +152,5 @@ springboot-pulsepoint-basic-demo/
         │       └── templates/
         │           ├── login.html          # Authentication view
         │           └── tasks.html          # PulsePoint reactive task manager component
-        └── test/                           # Automated JUnit 5 tests
+        └── test/                           # Automated JUnit 5 tests (22 tests passing)
 ```

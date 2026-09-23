@@ -167,18 +167,19 @@
 
                 const handleCreateTask = async (event) => {
                     event.preventDefault();
+                    const form = event.currentTarget;
                     setIsSubmitting(true);
                     setErrorMessage('');
                     setSuccessMessage('');
 
                     try {
-                        const formData = new FormData(event.currentTarget);
+                        const formData = new FormData(form);
                         const payload = Object.fromEntries(formData.entries());
 
                         const created = await pp.rpc("createTask", payload);
                         setTasks([created, ...tasks]);
                         setSuccessMessage('Task created successfully via PulsePoint RPC!');
-                        event.currentTarget.reset();
+                        form.reset();
                     } catch (err) {
                         if (err.errors) {
                             const details = Object.values(err.errors).flat().join(', ');

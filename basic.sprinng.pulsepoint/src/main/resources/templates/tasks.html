@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div>
+            <h1>Task Management</h1>
+            <p class="subtitle">Spring Boot + PulsePoint Architecture</p>
+        </div>
+        <div class="user-nav">
+            <span class="badge badge-user" sec:authentication="name">User</span>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-outline btn-sm">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="task-section">
+            <h2>Current Tasks</h2>
+            <div th:if="${#lists.isEmpty(tasks)}" class="empty-state">
+                <p>No tasks found. Tasks will appear here once created.</p>
+            </div>
+            <div th:unless="${#lists.isEmpty(tasks)}" class="task-list">
+                <div th:each="task : ${tasks}" class="task-card">
+                    <div class="task-header">
+                        <h3 th:text="${task.title}">Task Title</h3>
+                        <div class="task-badges">
+                            <span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(task.status)}" th:text="${task.status}">TODO</span>
+                            <span class="badge badge-priority" th:classappend="'priority-' + ${#strings.toLowerCase(task.priority)}" th:text="${task.priority}">MEDIUM</span>
+                        </div>
+                    </div>
+                    <p class="task-desc" th:text="${task.description}">Task Description</p>
+                    <small class="task-date" th:text="${#temporals.format(task.createdAt, 'yyyy-MM-dd HH:mm')}">Date</small>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

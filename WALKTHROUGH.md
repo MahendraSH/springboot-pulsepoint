@@ -54,8 +54,8 @@ Spring Boot Application Monolith
 ## Verification Results
 
 ### Automated Tests
-Ran 16 automated tests via Maven Surefire:
-- `PulsePointRpcFilterTest`: 6 tests passing (dispatches, payload parsing, validation errors, 404 handling, parameter extraction)
+Ran 17 automated tests via Maven Surefire:
+- `PulsePointRpcFilterTest`: 7 tests passing (dispatches, payload parsing, validation errors, 404 handling, parameter extraction)
 - `TaskServiceTest`: 6 tests passing (CRUD, mappings, exceptions)
 - `TaskControllerTest`: 3 tests passing (view routing, redirects)
 - `ApplicationTests`: 1 test passing (context load)

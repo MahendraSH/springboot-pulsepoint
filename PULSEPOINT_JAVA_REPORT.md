@@ -140,6 +140,11 @@ A complete automated browser test was performed using Antigravity IDE's interact
 5. **Reactive State Filtering:** Filter tabs (`ALL`, `TODO`, `IN_PROGRESS`, `DONE`) dynamically sorted and rendered tasks using `pp.state` without network requests.
 6. **Reactive Deletion via RPC:** Task #46 was deleted via `deleteTask` RPC, reconciling the DOM list and decrementing count back to 45.
 7. **Session Recording:** Full visual verification recorded and validated (`task_full_e2e_test_1790150651004.webp`).
+8. **Jakarta Bean Validation & Field-Level Errors:**
+   - **Empty Title Check:** Caught by `@NotBlank`, returned `{ "error": "Validation failed", "errors": { "title": ["Title is required"] } }`. Inline field error rendered beneath title input (**PASS**).
+   - **Max Length Check (>200 chars):** Caught by `@Size(max=200)`, returned `"Title must not exceed 200 characters"` (**PASS**).
+   - **Validation Recovery:** Valid task creation cleared all red error indicators immediately and prepended Task #49 (**PASS**).
+   - **Validation Recording:** Captured in `task_validation_tests_1790152840219.webp`.
 
 ---
 

@@ -75,6 +75,12 @@ Ran 16 automated tests via Maven Surefire:
 - **Task Deletion via RPC:** Executed `deleteTask` -> element removed from DOM reactively, task count returned to 45.
 - **Full Session Recording:** Captured in `task_full_e2e_test_1790150651004.webp`.
 
+### Form Validation & Error Handling Browser Test
+- **Empty Title Validation:** Cleared title input and clicked "Add Task via RPC" ➔ Top alert displayed `"Validation error: Title is required"`, inline error beneath field displayed `"Title is required"` (**PASS**).
+- **Overly Long Title (>200 chars):** Submitted 210-character title ➔ Top alert and inline error displayed `"Title must not exceed 200 characters"` (**PASS**).
+- **Recovery with Valid Task:** Submitted `"Validation Test Task"` (ID #49) ➔ Red error banners cleared immediately, green success notification displayed, task dynamically prepended (**PASS**).
+- **Validation Session Recording:** Captured in `task_validation_tests_1790152840219.webp`.
+
 ---
 
 ## Reusable Java Integration Findings for PulsePoint

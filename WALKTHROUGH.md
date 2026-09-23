@@ -66,6 +66,15 @@ Ran 16 automated tests via Maven Surefire:
 - Inserted tasks reactively via `createTask` RPC
 - Validated error states and JSON error responses.
 
+### End-to-End Browser Automation Test
+- **Test Runner:** Antigravity IDE Browser Test Suite (interactive Chromium engine).
+- **Navigation & Authentication:** `/login` with `demo` / `demo123` -> redirected to `/tasks` under authenticated session.
+- **Task Creation via RPC:** Submitted new task `#46` (`Automated Browser E2E Task`), count incremented 45 -> 46 without full page reload.
+- **Status Mutation via RPC:** Changed `#46` from `TODO` to `IN_PROGRESS` via `pp.rpc("updateTask", ...)` -> badge updated reactively with zero page flicker.
+- **Client-Side Filtering:** Tested tabs (`TODO`, `In Progress`, `Done`, `All`) -> rendered dynamically via `pp.state` filter.
+- **Task Deletion via RPC:** Executed `deleteTask` -> element removed from DOM reactively, task count returned to 45.
+- **Full Session Recording:** Captured in `task_full_e2e_test_1790150651004.webp`.
+
 ---
 
 ## Reusable Java Integration Findings for PulsePoint

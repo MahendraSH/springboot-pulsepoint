@@ -1,8 +1,11 @@
+
 package basic.sprinng.pulsepoint.pulsepoint;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import basic.sprinng.pulsepoint.exception.ConflictException;
 import basic.sprinng.pulsepoint.exception.ResourceNotFoundException;
+import basic.sprinng.pulsepoint.pulsepoint.exception.PulsePointValidationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,6 +85,12 @@ public class PulsePointRpcFilter extends OncePerRequestFilter {
         try {
             Object result = function.invoke(parameters != null ? parameters : Collections.emptyMap());
             sendSuccess(response, result);
+        } catch (PulsePointValidationException e) {
+            log.warn("Field validation error during RPC execution: {}", e.getMessage());
+            sendError(response, HttpStatus.BAD_REQUEST, e.getMessage(), e.getErrors());
+        } catch (ConflictException e) {
+            log.warn("Conflict during RPC execution: {}", e.getMessage());
+            sendError(response, HttpStatus.CONFLICT, e.getMessage(), null);
         } catch (ResourceNotFoundException e) {
             log.warn("Resource not found during RPC execution: {}", e.getMessage());
             sendError(response, HttpStatus.NOT_FOUND, e.getMessage(), null);
@@ -107,7 +116,7 @@ public class PulsePointRpcFilter extends OncePerRequestFilter {
         response.getWriter().flush();
     }
 
-    private void sendError(HttpServletResponse response, HttpStatus status, String message, Map<String, Object> errors) throws IOException {
+    private void sendError(HttpServletResponse response, HttpStatus status, String message, Map<String, ?> errors) throws IOException {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");

@@ -5,6 +5,9 @@ import basic.sprinng.pulsepoint.dto.CreateTaskRequest;
 import basic.sprinng.pulsepoint.dto.TaskResponse;
 import basic.sprinng.pulsepoint.pulsepoint.handler.TaskRpcRegistrar;
 import basic.sprinng.pulsepoint.service.TaskService;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +44,10 @@ class PulsePointRpcFilterTest {
         objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();
 
-        TaskRpcRegistrar registrar = new TaskRpcRegistrar(taskService, registry);
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        Validator validator = factory.getValidator();
+
+        TaskRpcRegistrar registrar = new TaskRpcRegistrar(taskService, registry, validator);
         registrar.registerFunctions();
 
         PulsePointRpcFilter rpcFilter = new PulsePointRpcFilter(registry, objectMapper);
@@ -109,7 +115,7 @@ class PulsePointRpcFilterTest {
     }
 
     @Test
-    void rpcCall_CreateTask_WithMissingTitle_ShouldReturn400() throws Exception {
+    void rpcCall_CreateTask_WithMissingTitle_ShouldReturn400WithFieldErrors() throws Exception {
         String invalidPayload = """
                 {
                     "title": "",
@@ -123,7 +129,26 @@ class PulsePointRpcFilterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidPayload))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Task title is required"));
+                .andExpect(jsonPath("$.error").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.title[0]").value("Title is required"));
+    }
+
+    @Test
+    void rpcCall_CreateTask_WithTooLongTitle_ShouldReturnSizeValidationError() throws Exception {
+        String invalidPayload = String.format("""
+                {
+                    "title": "%s"
+                }
+                """, "a".repeat(205));
+
+        mockMvc.perform(post("/tasks")
+                        .header("X-PP-RPC", "true")
+                        .header("X-PP-Function", "createTask")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidPayload))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.title[0]").value("Title must not exceed 200 characters"));
     }
 
     @Test

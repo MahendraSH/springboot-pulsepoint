@@ -46,12 +46,14 @@
                 <form onsubmit="handleCreateTask(event)">
                     <div class="form-group">
                         <label for="task-title">Title *</label>
-                        <input id="task-title" name="title" class="form-control" placeholder="e.g., Integrate PulsePoint RPC with Spring Security" required />
+                        <input id="task-title" name="title" class="form-control" placeholder="e.g., Integrate PulsePoint RPC with Spring Security" />
+                        <small class="field-error" hidden="{!titleError}">{titleError}</small>
                     </div>
 
                     <div class="form-group">
                         <label for="task-desc">Description</label>
                         <textarea id="task-desc" name="description" class="form-control" rows="2" placeholder="Task details and acceptance criteria..."></textarea>
+                        <small class="field-error" hidden="{!descError}">{descError}</small>
                     </div>
 
                     <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem;">
@@ -146,6 +148,8 @@
                 const [isSubmitting, setIsSubmitting] = pp.state(false);
                 const [errorMessage, setErrorMessage] = pp.state('');
                 const [successMessage, setSuccessMessage] = pp.state('');
+                const [titleError, setTitleError] = pp.state('');
+                const [descError, setDescError] = pp.state('');
 
                 // Load initial tasks on mount via PulsePoint RPC
                 pp.effect(() => {
@@ -171,6 +175,8 @@
                     setIsSubmitting(true);
                     setErrorMessage('');
                     setSuccessMessage('');
+                    setTitleError('');
+                    setDescError('');
 
                     try {
                         const formData = new FormData(form);
@@ -182,6 +188,8 @@
                         form.reset();
                     } catch (err) {
                         if (err.errors) {
+                            if (err.errors.title) setTitleError(err.errors.title.join(', '));
+                            if (err.errors.description) setDescError(err.errors.description.join(', '));
                             const details = Object.values(err.errors).flat().join(', ');
                             setErrorMessage('Validation error: ' + details);
                         } else {

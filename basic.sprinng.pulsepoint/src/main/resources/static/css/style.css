@@ -260,3 +260,11 @@ body {
     text-align: center;
     color: var(--text-muted);
 }
+
+.field-error {
+    color: #f87171;
+    font-size: 0.8rem;
+    display: block;
+    margin-top: 0.35rem;
+    font-weight: 500;
+}

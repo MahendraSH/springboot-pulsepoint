@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
+    <title>Task Manager — Spring Boot + PulsePoint</title>
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <!-- PulsePoint v2 Runtime -->
+    <script type="module">
+        import { ComponentInit as PP } from "/js/pp-reactive-v2.min.js";
+        PP.bootstrap();
+    </script>
 </head>
 <body>
 <div class="container">
     <header class="header">
         <div>
             <h1>Task Management</h1>
-            <p class="subtitle">Spring Boot + PulsePoint Architecture</p>
+            <p class="subtitle">Spring Boot 3.x Backend + PulsePoint v2 Reactive Frontend (Single Monolith)</p>
         </div>
         <div class="user-nav">
             <span class="badge badge-user" sec:authentication="name">User</span>
@@ -21,27 +26,204 @@
         </div>
     </header>
 
-    <main class="main-content">
-        <section class="task-section">
-            <h2>Current Tasks</h2>
-            <div th:if="${#lists.isEmpty(tasks)}" class="empty-state">
-                <p>No tasks found. Tasks will appear here once created.</p>
-            </div>
-            <div th:unless="${#lists.isEmpty(tasks)}" class="task-list">
-                <div th:each="task : ${tasks}" class="task-card">
-                    <div class="task-header">
-                        <h3 th:text="${task.title}">Task Title</h3>
-                        <div class="task-badges">
-                            <span class="badge" th:classappend="'badge-' + ${#strings.toLowerCase(task.status)}" th:text="${task.status}">TODO</span>
-                            <span class="badge badge-priority" th:classappend="'priority-' + ${#strings.toLowerCase(task.priority)}" th:text="${task.priority}">MEDIUM</span>
+    <!-- PulsePoint Reactive Component Boundary -->
+    <template pp-component="task_manager">
+        <div>
+            <!-- Create Task Card -->
+            <div class="card mb-4" style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Create New Task</h3>
+
+                <!-- Error Notification -->
+                <div class="alert alert-danger" hidden="{!errorMessage}">
+                    <span>{errorMessage}</span>
+                </div>
+
+                <!-- Success Notification -->
+                <div class="alert alert-info" hidden="{!successMessage}">
+                    <span>{successMessage}</span>
+                </div>
+
+                <form onsubmit="handleCreateTask(event)">
+                    <div class="form-group">
+                        <label for="task-title">Title *</label>
+                        <input id="task-title" name="title" class="form-control" placeholder="e.g., Integrate PulsePoint RPC with Spring Security" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-desc">Description</label>
+                        <textarea id="task-desc" name="description" class="form-control" rows="2" placeholder="Task details and acceptance criteria..."></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem;">
+                        <div style="flex: 1;">
+                            <label for="task-status">Status</label>
+                            <select id="task-status" name="status" class="form-control">
+                                <option value="TODO">TODO</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="DONE">DONE</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority" name="priority" class="form-control">
+                                <option value="LOW">LOW</option>
+                                <option value="MEDIUM" selected>MEDIUM</option>
+                                <option value="HIGH">HIGH</option>
+                            </select>
                         </div>
                     </div>
-                    <p class="task-desc" th:text="${task.description}">Task Description</p>
-                    <small class="task-date" th:text="${#temporals.format(task.createdAt, 'yyyy-MM-dd HH:mm')}">Date</small>
-                </div>
+
+                    <button type="submit" class="btn btn-primary" disabled="{isSubmitting}">
+                        <span hidden="{isSubmitting}">Add Task via RPC</span>
+                        <span hidden="{!isSubmitting}">Saving via RPC...</span>
+                    </button>
+                </form>
             </div>
-        </section>
-    </main>
+
+            <!-- Task List Section -->
+            <section class="task-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Tasks (<span id="task-count">{tasks.length}</span>)</h2>
+                    
+                    <!-- Status Filter Tabs -->
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-outline btn-sm" onclick="setFilter('ALL')">All</button>
+                        <button class="btn btn-outline btn-sm" onclick="setFilter('TODO')">TODO</button>
+                        <button class="btn btn-outline btn-sm" onclick="setFilter('IN_PROGRESS')">In Progress</button>
+                        <button class="btn btn-outline btn-sm" onclick="setFilter('DONE')">Done</button>
+                    </div>
+                </div>
+
+                <!-- Initial Loading State -->
+                <div class="empty-state" hidden="{!isLoading}">
+                    <p>Loading tasks through PulsePoint RPC...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" hidden="{isLoading || tasks.length > 0}">
+                    <p>No tasks found. Create your first task using the form above.</p>
+                </div>
+
+                <!-- Reactive Task Cards -->
+                <div class="task-list" hidden="{isLoading || tasks.length === 0}">
+                    <template pp-for="task in filteredTasks">
+                        <div class="task-card" key="{task.id}">
+                            <div class="task-header">
+                                <div>
+                                    <h3 style="font-size: 1.1rem; color: #f8fafc;">{task.title}</h3>
+                                    <small class="task-date">ID: #{task.id} • Created: {task.createdAt ? task.createdAt.replace('T', ' ').substring(0, 16) : ''}</small>
+                                </div>
+                                <div class="task-badges">
+                                    <span class="badge">{task.status}</span>
+                                    <span class="badge badge-priority">{task.priority}</span>
+                                </div>
+                            </div>
+                            
+                            <p class="task-desc" hidden="{!task.description}">{task.description}</p>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #334155;">
+                                <!-- Quick Status Transition -->
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <small style="color: #94a3b8;">Move to:</small>
+                                    <button class="btn btn-outline btn-sm" hidden="{task.status === 'TODO'}" onclick="changeStatus(task.id, 'TODO')">TODO</button>
+                                    <button class="btn btn-outline btn-sm" hidden="{task.status === 'IN_PROGRESS'}" onclick="changeStatus(task.id, 'IN_PROGRESS')">IN_PROGRESS</button>
+                                    <button class="btn btn-outline btn-sm" hidden="{task.status === 'DONE'}" onclick="changeStatus(task.id, 'DONE')">DONE</button>
+                                </div>
+
+                                <!-- Delete Action -->
+                                <button class="btn btn-danger btn-sm" onclick="handleDeleteTask(task.id)">Delete</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <!-- PulsePoint Component Script -->
+            <script>
+                const [tasks, setTasks] = pp.state([]);
+                const [filter, setFilter] = pp.state('ALL');
+                const [isLoading, setIsLoading] = pp.state(true);
+                const [isSubmitting, setIsSubmitting] = pp.state(false);
+                const [errorMessage, setErrorMessage] = pp.state('');
+                const [successMessage, setSuccessMessage] = pp.state('');
+
+                // Load initial tasks on mount via PulsePoint RPC
+                pp.effect(() => {
+                    loadTasks();
+                }, []);
+
+                const loadTasks = async () => {
+                    setIsLoading(true);
+                    setErrorMessage('');
+                    try {
+                        const result = await pp.rpc("listTasks");
+                        setTasks(result || []);
+                    } catch (err) {
+                        setErrorMessage(err.message || 'Failed to load tasks via RPC');
+                    } finally {
+                        setIsLoading(false);
+                    }
+                };
+
+                const handleCreateTask = async (event) => {
+                    event.preventDefault();
+                    setIsSubmitting(true);
+                    setErrorMessage('');
+                    setSuccessMessage('');
+
+                    try {
+                        const formData = new FormData(event.currentTarget);
+                        const payload = Object.fromEntries(formData.entries());
+
+                        const created = await pp.rpc("createTask", payload);
+                        setTasks([created, ...tasks]);
+                        setSuccessMessage('Task created successfully via PulsePoint RPC!');
+                        event.currentTarget.reset();
+                    } catch (err) {
+                        if (err.errors) {
+                            const details = Object.values(err.errors).flat().join(', ');
+                            setErrorMessage('Validation error: ' + details);
+                        } else {
+                            setErrorMessage(err.message || 'Failed to create task via RPC');
+                        }
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                };
+
+                const changeStatus = async (id, newStatus) => {
+                    setErrorMessage('');
+                    try {
+                        const updated = await pp.rpc("updateTask", { id: id, status: newStatus });
+                        setTasks(tasks.map(t => t.id === id ? updated : t));
+                        setSuccessMessage('Task #' + id + ' status updated to ' + newStatus);
+                    } catch (err) {
+                        setErrorMessage(err.message || 'Failed to update task status');
+                    }
+                };
+
+                const handleDeleteTask = async (id) => {
+                    if (!confirm('Are you sure you want to delete task #' + id + '?')) {
+                        return;
+                    }
+                    setErrorMessage('');
+                    try {
+                        await pp.rpc("deleteTask", { id: id });
+                        setTasks(tasks.filter(t => t.id !== id));
+                        setSuccessMessage('Task #' + id + ' deleted successfully.');
+                    } catch (err) {
+                        setErrorMessage(err.message || 'Failed to delete task');
+                    }
+                };
+
+                // Computed filtered task list
+                const filteredTasks = tasks.filter(t => {
+                    if (filter === 'ALL') return true;
+                    return t.status === filter;
+                });
+            </script>
+        </div>
+    </template>
 </div>
 </body>
 </html>

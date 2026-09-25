@@ -2,10 +2,10 @@
 
 ## Overview
 
-We have built and validated a monolithic Java Spring Boot application integrating **PulsePoint v2** reactive frontend layer with no separate Node.js / Vite build step or frontend server.
+We have built, styled, and validated a monolithic Java Spring Boot application integrating **PulsePoint v2** reactive frontend layer with **Tailwind CSS** (zero-build, without npm), and no separate Node.js / Vite build step or frontend server.
 
 ```
-Browser (PulsePoint v2 runtime)
+Browser (PulsePoint v2 runtime + Tailwind CSS)
    │
    ├─► RPC (POST + X-PP-RPC: true, X-PP-Function, X-CSRF-Token)
    ├─► SSE Streaming (POST + X-PP-RPC: true + Accept: text/event-stream)
@@ -46,13 +46,13 @@ Spring Boot Application Monolith
 - **CSRF Bridge:** [`PulsePointCsrfFilter`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointCsrfFilter.java) + `CookieCsrfTokenRepository.setCookieName("pp_csrf")` exposes the token for the client JS to send as `X-CSRF-Token`.
 - **RPC Registrar:** [`TaskRpcRegistrar`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) exposes `listTasks`, `getTask`, `createTask`, `updateTask`, `deleteTask`, `streamTaskAudit`, and `uploadTaskAttachment`.
 
-### 3. Server-Sent Events (SSE) Streaming (Phase 3)
+### 3. Server-Sent Events (SSE) Streaming
 - [`PulsePointStreamEmitter.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStreamEmitter.java) flushes SSE chunks immediately over the HTTP response stream in format `data: <json>\n\n`.
 - Registered `streamTaskAudit`: emits live audit steps (`25%`, `50%`, `75%`, `100%`) for long-running task operations.
 - Client consumed seamlessly via PulsePoint's `pp.rpc("streamTaskAudit", { taskId }, { onStream, onStreamComplete, onStreamError })`.
 - Reactive progress bar (`{auditPercent}%`) and status indicator (`{auditStep}`) update with zero page flicker.
 
-### 4. Named WebSockets & Collaborative Live Sync (Phase 4)
+### 4. Named WebSockets & Collaborative Live Sync
 - [`WebSocketConfig.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/WebSocketConfig.java) maps `/__pulsepoint/ws`.
 - [`PulsePointWebSocketHandler.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/PulsePointWebSocketHandler.java):
   - Inspects query param `name` (e.g. `/__pulsepoint/ws?name=tasks`).
@@ -60,12 +60,19 @@ Spring Boot Application Monolith
 - [`TaskBroadcaster.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/TaskBroadcaster.java):
   - Connected sessions receive real-time JSON frames: `TASK_CREATED`, `TASK_UPDATED`, `TASK_DELETED`.
 - Multiple browser tabs synchronize instantaneously without polling or manual refreshes.
-- Live connection indicator: `● Live Sync: {liveSyncStatus}`.
+- Live connection indicator: `● WebSocket Live Sync: {liveSyncStatus}` with pulsing green indicator.
 
-### 5. Multipart File Uploads & XSS Safety (Phase 5)
+### 5. Multipart File Uploads & XSS Safety
 - `PulsePointRpcFilter` supports `multipart/form-data` decoding via `StandardServletMultipartResolver`.
 - Registered `uploadTaskAttachment` accepting file attachments with live upload tracking via PulsePoint's `onUploadProgress({ loaded, total, percent })`.
 - XSS verification: verified that client HTML template interpolation safely escapes `<script>` tags as text nodes.
+
+### 6. Tailwind CSS & Responsive UI/UX Modernization (Without npm)
+- **Zero-Build Tailwind CSS**: Configured Tailwind via CDN script (`https://cdn.tailwindcss.com`) paired with an in-page configuration script. Requires **0 npm / Node.js dependencies**, perfectly fitting the Spring Boot monolith.
+- **Inter Typography & Zinc Design System**: Applied Google Fonts `Inter` with neutral zinc surfaces (`bg-zinc-950`, `bg-zinc-900/90`, `border-zinc-800`), glowing indigo rings, and high-contrast status pills.
+- **Full Mobile/Tablet/Desktop Responsiveness**: Header, quick metrics cards, creation form grid (`grid-cols-1 sm:grid-cols-2`), filter buttons, and task cards stack cleanly without horizontal scrollbars on mobile (375x667).
+- **Dynamic Quick Metrics**: Real-time counts for Total, Todo, In Progress, and Done tasks dynamically bound to PulsePoint state.
+- **Strict Compliance with `docs/llms.md`**: Preserved `<template pp-component="task_manager">` boundary, quoted all attribute bindings (`class="..."`, `hidden="{...}"`), and maintained keyed `<template pp-for>`.
 
 ---
 
@@ -85,40 +92,34 @@ Ran 22 automated tests via Maven Surefire:
 - Inserted tasks reactively via `createTask` RPC
 - Validated error states and JSON error responses.
 
-### End-to-End Interactive Verification Suite (7/7 PASSED)
-
-The full interactive browser test suite was executed in an interactive Chromium engine on `http://localhost:8080`, exercising the entire monolithic architecture:
+### End-to-End Interactive Verification Suite (8/8 PASSED)
 
 | # | Feature / Test Case | Actions & Triggers | Observations & Result | Status |
 |---|---------------------|--------------------|------------------------|:------:|
-| **1** | **Authentication** | Navigated to `/login`, authenticated with `demo` / `demo123`. | Auto-redirected to `/tasks`. Header displayed `User: DEMO`. | **PASS** |
-| **2** | **Initial State & Filtering** | Inspected top badges and clicked `TODO`, `IN PROGRESS`, `DONE`, `ALL`. | Initial tasks loaded via RPC. `● Live Sync: Connected` active. Client-side filtering operated instantly without network round-trips. | **PASS** |
-| **3** | **Validation & Error Handling (RPC)** | Submitted empty title, then 210-character title, then `"AGY IDE E2E Test Task"`. | Server Bean Validation rejected invalid inputs with top red banner and inline warnings. Valid task cleared errors and prepended to DOM. | **PASS** |
-| **4** | **Status Mutation & Deletion (RPC)** | Toggled `"AGY IDE E2E Test Task"` to `IN PROGRESS` then `DONE`. Clicked `Delete`. | Status badge mutated dynamically with zero page flicker. Task removed from DOM and total counter decremented upon deletion. | **PASS** |
+| **1** | **Authentication** | Navigated to `/login`, authenticated with `demo` / `demo123`. | Auto-redirected to `/tasks`. Modern dark card with demo account pills. | **PASS** |
+| **2** | **Initial State & Filtering** | Inspected top badges and clicked `TODO`, `IN PROGRESS`, `DONE`, `ALL`. | Initial tasks loaded via RPC. `WebSocket Live Sync: Connected` active. Filter tabs toggle instantly. | **PASS** |
+| **3** | **Validation & Error Handling (RPC)** | Submitted empty title, then 210-character title. | Server Bean Validation rejected invalid inputs with top red banner and inline warnings. Valid task cleared errors. | **PASS** |
+| **4** | **Status Mutation & Deletion (RPC)** | Changed task to `IN PROGRESS` then `DONE`. Clicked `Delete`. | Status badge mutated dynamically with zero page flicker. Task removed from DOM upon deletion. | **PASS** |
 | **5** | **Server-Sent Events (SSE) Streaming** | Clicked `⚡ Audit (SSE)` on Task #1. | Real-time card appeared, streaming progress (25% → 50% → 75% → 100%) and step messages via `text/event-stream`. | **PASS** |
 | **6** | **Multipart File Upload with Progress** | Clicked `📎 Attach`, selected `test-attachment.txt`. | Upload progress bar tracked upload chunks via `onUploadProgress`, finishing at 100% with green success notice. | **PASS** |
 | **7** | **Multi-Tab WebSocket Live Sync** | Opened Tab 2. Created `"WebSocket Sync Task"` in Tab 1. Checked Tab 2. | Tab 2 dynamically received `TASK_CREATED` over `ws://` and rendered the new task without any manual reload. | **PASS** |
+| **8** | **Tailwind CSS & Mobile Responsiveness** | Resized browser to mobile (375x667) and tablet (768x1024). | Fluid layout cleanly reflowed navigation, quick stats, form controls, and task cards with zero horizontal overflow. | **PASS** |
 
 #### Visual Evidence & Snapshots
 
-- **Step 3 (Form Validation & Dynamic Creation):**
-  - Empty title validation: [`screenshots/empty_title_validation_1790160129534.png`](screenshots/empty_title_validation_1790160129534.png)
-  - Valid task created: [`screenshots/valid_task_creation_1790160337821.png`](screenshots/valid_task_creation_1790160337821.png)
+- **Modernized Login Page:** [`screenshots/login_page_1790321882096.png`](screenshots/login_page_1790321882096.png)
+- **Responsive Tasks Dashboard (Desktop):** [`screenshots/tasks_page_dashboard_1790321972386.png`](screenshots/tasks_page_dashboard_1790321972386.png)
+- **Task Created via RPC:** [`screenshots/task_created_success_1790322134999.png`](screenshots/task_created_success_1790322134999.png)
+- **Status Mutation to IN_PROGRESS:** [`screenshots/status_updated_in_progress_1790322166624.png`](screenshots/status_updated_in_progress_1790322166624.png)
+- **Live SSE Audit Streaming:** [`screenshots/sse_audit_progress_1790322214884.png`](screenshots/sse_audit_progress_1790322214884.png)
+- **Mobile Viewport (375x667 Header & Form):** [`screenshots/mobile_view_top_1790322286184.png`](screenshots/mobile_view_top_1790322286184.png)
+- **Mobile Viewport (375x667 Task Cards):** [`screenshots/mobile_view_portrait_1790322262913.png`](screenshots/mobile_view_portrait_1790322262913.png)
+- **Tablet Viewport (768x1024):** [`screenshots/tablet_view_1790322311058.png`](screenshots/tablet_view_1790322311058.png)
+- **Multi-Tab WebSocket Live Sync:** [`screenshots/websocket_live_sync_1790163508917.png`](screenshots/websocket_live_sync_1790163508917.png)
 
-- **Step 4 (Status Mutation & Reactive Deletion):**
-  - Status mutation and deletion: [`screenshots/status_mutation_and_deletion_1790161888799.png`](screenshots/status_mutation_and_deletion_1790161888799.png)
-
-- **Step 5 (Real-Time SSE Audit Streaming):**
-  - Sequential audit stream: [`screenshots/sse_audit_stream_1790162251926.png`](screenshots/sse_audit_stream_1790162251926.png)
-
-- **Step 6 (Multipart Upload with Progress Tracking):**
-  - Byte transmission and completion: [`screenshots/file_upload_progress_1790162452519.png`](screenshots/file_upload_progress_1790162452519.png)
-
-- **Step 7 (Multi-Tab WebSocket Live Sync):**
-  - Multi-tab reactive sync: [`screenshots/websocket_live_sync_1790163508917.png`](screenshots/websocket_live_sync_1790163508917.png)
-
-#### Full Interactive Session Recording
-- Complete browser recording: [**`full_interactive_verification_1790159186402.webp`**](screenshots/full_interactive_verification_1790159186402.webp)
+#### Interactive Session Recordings
+- **Tailwind CSS & Responsive Verification Video:** [`screenshots/tailwind_responsive_test_1790321816150.webp`](screenshots/tailwind_responsive_test_1790321816150.webp)
+- **Full Monolithic E2E Verification Video:** [`screenshots/full_interactive_verification_1790159186402.webp`](screenshots/full_interactive_verification_1790159186402.webp)
 
 ---
 
@@ -126,6 +127,7 @@ The full interactive browser test suite was executed in an interactive Chromium 
 
 | Topic | Finding / Best Practice |
 |---|---|
+| **Zero-Build Tailwind CSS** | Tailwind can be integrated via CDN + custom JavaScript config script directly inside Thymeleaf templates with 0 npm dependencies, preserving the zero-build nature of PulsePoint. |
 | **CSRF Handling** | Configure Spring Security's `CookieCsrfTokenRepository.withHttpOnlyFalse()` with `setCookieName("pp_csrf")` and `setHeaderName("X-CSRF-Token")`. |
 | **Error Format** | When an RPC fails, Spring Security & exception handlers must return `{ "error": "...", "errors": {} }` with `Content-Type: application/json` rather than standard Spring Boot HTML error pages. |
 | **SSE Streaming** | Return `Content-Type: text/event-stream;charset=UTF-8`, set `Cache-Control: no-cache`, format chunks as `data: <json>\n\n`, and call `response.getWriter().flush()` after every emission. PulsePoint's `handleStream()` automatically strips the prefix and parses the JSON. |

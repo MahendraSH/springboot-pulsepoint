@@ -1,42 +1,115 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Task Manager</title>
+    <title>Sign In — Task Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
 </head>
-<body>
-<div class="container auth-container">
-    <div class="card">
-        <h2>Sign In</h2>
-        <p class="subtitle">PulsePoint & Spring Boot Task Demo</p>
-
-        <div th:if="${param.error}" class="alert alert-danger">
-            Invalid username or password.
+<body class="bg-zinc-950 text-zinc-100 font-sans antialiased min-h-screen flex items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+    <div class="w-full max-w-md">
+        <!-- Logo / App Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 mb-3 shadow-inner">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">Task Manager</h1>
+            <p class="text-sm text-zinc-400 mt-1">Spring Boot 3.x + PulsePoint v2 Reactive Stack</p>
         </div>
-        <div th:if="${param.logout}" class="alert alert-info">
-            You have been logged out.
-        </div>
 
-        <form th:action="@{/login}" method="post">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" required autofocus placeholder="demo">
+        <!-- Auth Card -->
+        <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xl backdrop-blur-sm">
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-zinc-100">Welcome back</h2>
+                <p class="text-xs text-zinc-400 mt-0.5">Please enter your credentials to access your workspace</p>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" required placeholder="demo123">
+            <!-- Alerts -->
+            <div th:if="${param.error}" class="mb-5 p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm flex items-start gap-2.5">
+                <svg class="w-5 h-5 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <span>Invalid username or password. Please try again.</span>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-        </form>
+            <div th:if="${param.logout}" class="mb-5 p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm flex items-start gap-2.5">
+                <svg class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>You have been safely signed out.</span>
+            </div>
 
-        <div class="demo-credentials">
-            <small>Default credentials: <strong>demo</strong> / <strong>demo123</strong></small>
+            <!-- Login Form -->
+            <form th:action="@{/login}" method="post" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-xs font-medium text-zinc-300 mb-1.5">Username</label>
+                    <div class="relative">
+                        <input type="text" id="username" name="username" class="w-full px-3.5 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all" required autofocus placeholder="demo">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="password" class="block text-xs font-medium text-zinc-300">Password</label>
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" class="w-full px-3.5 py-2.5 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-indigo-600/30 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quick Demo Credentials Box -->
+            <div class="mt-6 pt-5 border-t border-zinc-800/80 text-center">
+                <p class="text-xs text-zinc-500 mb-2">Preloaded Test Accounts</p>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        demo / demo123
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-zinc-950 border border-zinc-800 text-zinc-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                        admin / admin123
+                    </span>
+                </div>
+            </div>
         </div>
+
+        <p class="text-center text-xs text-zinc-600 mt-6">
+            Monolithic Spring Boot 3 &bull; PulsePoint Reactive Engine
+        </p>
     </div>
-</div>
 </body>
 </html>

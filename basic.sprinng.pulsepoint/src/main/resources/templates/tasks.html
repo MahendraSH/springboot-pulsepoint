@@ -1,9 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager — Spring Boot + PulsePoint</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
     <!-- PulsePoint v2 Runtime -->
     <script type="module">
@@ -11,372 +36,493 @@
         PP.bootstrap();
     </script>
 </head>
-<body>
-<div class="container">
-    <header class="header">
-        <div>
-            <h1>Task Management</h1>
-            <p class="subtitle">Spring Boot 3.x Backend + PulsePoint v2 Reactive Frontend (Single Monolith)</p>
-        </div>
-        <div class="user-nav">
-            <span class="badge badge-user" sec:authentication="name">User</span>
-            <form th:action="@{/logout}" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-outline btn-sm">Logout</button>
-            </form>
-        </div>
-    </header>
+<body class="bg-zinc-950 text-zinc-100 font-sans antialiased min-h-screen selection:bg-indigo-500 selection:text-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
-    <!-- PulsePoint Reactive Component Boundary -->
-    <template pp-component="task_manager">
-        <div>
-            <!-- Create Task Card -->
-            <div class="card mb-4" style="margin-bottom: 2rem;">
-                <h3 style="margin-bottom: 1rem;">Create New Task</h3>
-
-                <!-- Error Notification -->
-                <div class="alert alert-danger" hidden="{!errorMessage}">
-                    <span>{errorMessage}</span>
+        <!-- Top Header & Navigation -->
+        <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-zinc-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-inner">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
                 </div>
-
-                <!-- Success Notification -->
-                <div class="alert alert-info" hidden="{!successMessage}">
-                    <span>{successMessage}</span>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Task Management</h1>
+                    <p class="text-xs sm:text-sm text-zinc-400">Spring Boot 3.x Backend &bull; PulsePoint v2 Reactive Engine</p>
                 </div>
+            </div>
 
-                <form onsubmit="handleCreateTask(event)">
-                    <div class="form-group">
-                        <label for="task-title">Title *</label>
-                        <input id="task-title" name="title" class="form-control" placeholder="e.g., Integrate PulsePoint RPC with Spring Security" />
-                        <small class="field-error" hidden="{!titleError}">{titleError}</small>
-                    </div>
+            <div class="flex items-center gap-3 self-end sm:self-auto">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 border border-zinc-800 text-zinc-300">
+                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span sec:authentication="name">User</span>
+                </span>
 
-                    <div class="form-group">
-                        <label for="task-desc">Description</label>
-                        <textarea id="task-desc" name="description" class="form-control" rows="2" placeholder="Task details and acceptance criteria..."></textarea>
-                        <small class="field-error" hidden="{!descError}">{descError}</small>
-                    </div>
-
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem;">
-                        <div style="flex: 1;">
-                            <label for="task-status">Status</label>
-                            <select id="task-status" name="status" class="form-control">
-                                <option value="TODO">TODO</option>
-                                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                                <option value="DONE">DONE</option>
-                            </select>
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="task-priority">Priority</label>
-                            <select id="task-priority" name="priority" class="form-control">
-                                <option value="LOW">LOW</option>
-                                <option value="MEDIUM" selected>MEDIUM</option>
-                                <option value="HIGH">HIGH</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" disabled="{isSubmitting}">
-                        <span hidden="{isSubmitting}">Add Task via RPC</span>
-                        <span hidden="{!isSubmitting}">Saving via RPC...</span>
+                <form th:action="@{/logout}" method="post" class="inline">
+                    <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition duration-150">
+                        <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
                     </button>
                 </form>
             </div>
+        </header>
 
-            <!-- Real-Time SSE Audit Progress Card -->
-            <div class="card mb-4" hidden="{!isAuditing}" style="background-color: #1e293b; border: 1px solid #3b82f6; margin-bottom: 1.5rem; padding: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <strong style="color: #60a5fa;">⚡ Live SSE Task #{auditTaskId} Audit Stream</strong>
-                    <span style="color: #60a5fa; font-weight: bold;">{auditPercent}%</span>
-                </div>
-                <div style="background-color: #334155; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem;">
-                    <div style="background-color: #3b82f6; height: 100%; width: 100%; transform-origin: left; transform: scaleX(calc({auditPercent} / 100)); transition: transform 0.3s ease;"></div>
-                </div>
-                <small style="color: #93c5fd;">{auditStep}</small>
-            </div>
+        <!-- PulsePoint Reactive Component Boundary -->
+        <template pp-component="task_manager">
+            <div class="space-y-6">
 
-            <!-- Multipart File Upload Progress Card -->
-            <div class="card mb-4" hidden="{!isUploading}" style="background-color: #1e293b; border: 1px solid #10b981; margin-bottom: 1.5rem; padding: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <strong style="color: #34d399;">📎 Uploading Attachment to Task #{uploadTaskId}...</strong>
-                    <span style="color: #34d399; font-weight: bold;">{uploadProgress}%</span>
-                </div>
-                <div style="background-color: #334155; height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="background-color: #10b981; height: 100%; width: 100%; transform-origin: left; transform: scaleX(calc({uploadProgress} / 100)); transition: transform 0.2s ease;"></div>
-                </div>
-            </div>
-
-            <input type="file" id="task-file-input" style="display: none;" onchange="handleFileUpload(event)" />
-
-            <!-- Task List Section -->
-            <section class="task-section">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <h2>Tasks (<span id="task-count">{tasks.length}</span>)</h2>
-                        <span class="badge" style="background-color: #064e3b; color: #34d399; font-size: 0.75rem; border: 1px solid #059669;">● Live Sync: {liveSyncStatus}</span>
+                <!-- Live Sync & Quick Status Bar -->
+                <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-xs text-zinc-400">WebSocket Live Sync:</span>
+                        <span class="text-xs font-medium text-emerald-400">{liveSyncStatus}</span>
                     </div>
-                    
-                    <!-- Status Filter Tabs -->
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-outline btn-sm" onclick="setFilter('ALL')">All</button>
-                        <button class="btn btn-outline btn-sm" onclick="setFilter('TODO')">TODO</button>
-                        <button class="btn btn-outline btn-sm" onclick="setFilter('IN_PROGRESS')">In Progress</button>
-                        <button class="btn btn-outline btn-sm" onclick="setFilter('DONE')">Done</button>
+
+                    <div class="flex items-center gap-2 text-xs text-zinc-400">
+                        <span>Total: <strong class="text-zinc-200">{tasks.length}</strong></span>
+                        <span class="text-zinc-600">&bull;</span>
+                        <span>Todo: <strong class="text-zinc-200">{todoCount}</strong></span>
+                        <span class="text-zinc-600">&bull;</span>
+                        <span>In Progress: <strong class="text-amber-300">{inProgressCount}</strong></span>
+                        <span class="text-zinc-600">&bull;</span>
+                        <span>Done: <strong class="text-emerald-300">{doneCount}</strong></span>
                     </div>
                 </div>
 
-                <!-- Initial Loading State -->
-                <div class="empty-state" hidden="{!isLoading}">
-                    <p>Loading tasks through PulsePoint RPC...</p>
+                <!-- Notifications -->
+                <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm flex items-start justify-between gap-3 shadow-sm" hidden="{!errorMessage}">
+                    <div class="flex items-start gap-2.5">
+                        <svg class="w-5 h-5 text-rose-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>{errorMessage}</span>
+                    </div>
+                    <button type="button" onclick="setErrorMessage('')" class="text-rose-400 hover:text-rose-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
 
-                <!-- Empty State -->
-                <div class="empty-state" hidden="{isLoading || tasks.length > 0}">
-                    <p>No tasks found. Create your first task using the form above.</p>
+                <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm flex items-start justify-between gap-3 shadow-sm" hidden="{!successMessage}">
+                    <div class="flex items-start gap-2.5">
+                        <svg class="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>{successMessage}</span>
+                    </div>
+                    <button type="button" onclick="setSuccessMessage('')" class="text-emerald-400 hover:text-emerald-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
 
-                <!-- Reactive Task Cards -->
-                <div class="task-list" hidden="{isLoading || tasks.length === 0}">
-                    <template pp-for="task in filteredTasks">
-                        <div class="task-card" key="{task.id}">
-                            <div class="task-header">
-                                <div>
-                                    <h3 style="font-size: 1.1rem; color: #f8fafc;">{task.title}</h3>
-                                    <small class="task-date">ID: #{task.id} • Created: {task.createdAt ? task.createdAt.replace('T', ' ').substring(0, 16) : ''}</small>
-                                </div>
-                                <div class="task-badges">
-                                    <span class="badge">{task.status}</span>
-                                    <span class="badge badge-priority">{task.priority}</span>
-                                </div>
+                <!-- Create Task Card -->
+                <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 sm:p-6 shadow-sm">
+                    <div class="flex items-center gap-2 mb-4">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <h2 class="text-base sm:text-lg font-semibold text-zinc-100">Create New Task</h2>
+                    </div>
+
+                    <form onsubmit="handleCreateTask(event)" class="space-y-4">
+                        <div>
+                            <label for="task-title" class="block text-xs font-medium text-zinc-300 mb-1.5">Task Title *</label>
+                            <input id="task-title" name="title" class="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all" placeholder="e.g., Integrate PulsePoint RPC with Spring Security" />
+                            <small class="text-xs text-rose-400 mt-1 block" hidden="{!titleError}">{titleError}</small>
+                        </div>
+
+                        <div>
+                            <label for="task-desc" class="block text-xs font-medium text-zinc-300 mb-1.5">Description</label>
+                            <textarea id="task-desc" name="description" rows="2" class="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all" placeholder="Task details and acceptance criteria..."></textarea>
+                            <small class="text-xs text-rose-400 mt-1 block" hidden="{!descError}">{descError}</small>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="task-status" class="block text-xs font-medium text-zinc-300 mb-1.5">Status</label>
+                                <select id="task-status" name="status" class="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
+                                    <option value="TODO">TODO</option>
+                                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                    <option value="DONE">DONE</option>
+                                </select>
                             </div>
-                            
-                            <p class="task-desc" hidden="{!task.description}">{task.description}</p>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #334155;">
-                                <!-- Quick Status Transition -->
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <small style="color: #94a3b8;">Move to:</small>
-                                    <button class="btn btn-outline btn-sm" hidden="{task.status === 'TODO'}" onclick="changeStatus(task.id, 'TODO')">TODO</button>
-                                    <button class="btn btn-outline btn-sm" hidden="{task.status === 'IN_PROGRESS'}" onclick="changeStatus(task.id, 'IN_PROGRESS')">IN_PROGRESS</button>
-                                    <button class="btn btn-outline btn-sm" hidden="{task.status === 'DONE'}" onclick="changeStatus(task.id, 'DONE')">DONE</button>
-                                </div>
-
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <!-- Audit SSE Action -->
-                                    <button class="btn btn-outline btn-sm" style="border-color: #3b82f6; color: #60a5fa;" onclick="handleStreamAudit(task.id)">⚡ Audit (SSE)</button>
-                                    <!-- Attach File Action -->
-                                    <button class="btn btn-outline btn-sm" style="border-color: #10b981; color: #34d399;" onclick="promptUpload(task.id)">📎 Attach</button>
-                                    <!-- Delete Action -->
-                                    <button class="btn btn-danger btn-sm" onclick="handleDeleteTask(task.id)">Delete</button>
-                                </div>
+                            <div>
+                                <label for="task-priority" class="block text-xs font-medium text-zinc-300 mb-1.5">Priority</label>
+                                <select id="task-priority" name="priority" class="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
+                                    <option value="LOW">LOW</option>
+                                    <option value="MEDIUM" selected>MEDIUM</option>
+                                    <option value="HIGH">HIGH</option>
+                                </select>
                             </div>
                         </div>
-                    </template>
+
+                        <div class="pt-1">
+                            <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-sm font-medium shadow-sm shadow-indigo-600/30 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" disabled="{isSubmitting}">
+                                <span hidden="{isSubmitting}" class="inline-flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Task via RPC
+                                </span>
+                                <span hidden="{!isSubmitting}" class="inline-flex items-center gap-2">
+                                    <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Saving via RPC...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </section>
 
-            <!-- PulsePoint Component Script -->
-            <script>
-                const [tasks, setTasks] = pp.state([]);
-                const [filter, setFilter] = pp.state('ALL');
-                const [isLoading, setIsLoading] = pp.state(true);
-                const [isSubmitting, setIsSubmitting] = pp.state(false);
-                const [errorMessage, setErrorMessage] = pp.state('');
-                const [successMessage, setSuccessMessage] = pp.state('');
-                const [titleError, setTitleError] = pp.state('');
-                const [descError, setDescError] = pp.state('');
+                <!-- Real-Time SSE Audit Progress Card -->
+                <div class="p-5 rounded-2xl bg-zinc-900/90 border border-indigo-500/40 shadow-sm" hidden="{!isAuditing}">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center gap-2 text-sm font-semibold text-indigo-300">
+                            <span class="animate-pulse">⚡</span> Live SSE Audit Stream &bull; Task #{auditTaskId}
+                        </span>
+                        <span class="text-xs font-mono font-bold text-indigo-400">{auditPercent}%</span>
+                    </div>
+                    <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden mb-2">
+                        <div class="bg-indigo-500 h-2 rounded-full transition-all duration-300" pp-style="'width: ' + auditPercent + '%;'"></div>
+                    </div>
+                    <p class="text-xs text-zinc-400">{auditStep}</p>
+                </div>
 
-                // Multipart Upload state
-                const [uploadTaskId, setUploadTaskId] = pp.state(null);
-                const [uploadProgress, setUploadProgress] = pp.state(0);
-                const [isUploading, setIsUploading] = pp.state(false);
+                <!-- Multipart File Upload Progress Card -->
+                <div class="p-5 rounded-2xl bg-zinc-900/90 border border-emerald-500/40 shadow-sm" hidden="{!isUploading}">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-300">
+                            <span class="animate-pulse">📎</span> Uploading Attachment to Task #{uploadTaskId}...
+                        </span>
+                        <span class="text-xs font-mono font-bold text-emerald-400">{uploadProgress}%</span>
+                    </div>
+                    <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                        <div class="bg-emerald-500 h-2 rounded-full transition-all duration-200" pp-style="'width: ' + uploadProgress + '%;'"></div>
+                    </div>
+                </div>
 
-                // SSE Streaming state
-                const [auditTaskId, setAuditTaskId] = pp.state(null);
-                const [auditPercent, setAuditPercent] = pp.state(0);
-                const [auditStep, setAuditStep] = pp.state('');
-                const [isAuditing, setIsAuditing] = pp.state(false);
+                <input type="file" id="task-file-input" class="hidden" onchange="handleFileUpload(event)" />
 
-                // WebSocket Live Sync state
-                const [liveSyncStatus, setLiveSyncStatus] = pp.state('Connecting...');
+                <!-- Task List Section -->
+                <section class="space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-lg font-semibold text-white">Tasks</h2>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/60">{filteredTasks.length}</span>
+                        </div>
 
-                // Initialize Named WebSocket for live multi-tab collaborative sync
-                pp.effect(() => {
-                    try {
-                        pp.socket("tasks", {}, {
-                            onOpen: () => {
-                                setLiveSyncStatus("Connected");
-                            },
-                            onMessage: (msg) => {
-                                if (!msg || typeof msg !== "object") return;
-                                if (msg.event === "TASK_CREATED" && msg.task) {
-                                    setTasks(prev => prev.some(t => t.id === msg.task.id) ? prev : [msg.task, ...prev]);
-                                    setSuccessMessage('⚡ Live Sync: Task #' + msg.task.id + ' created in another session');
-                                } else if (msg.event === "TASK_UPDATED" && msg.task) {
-                                    setTasks(prev => prev.map(t => t.id === msg.task.id ? msg.task : t));
-                                    setSuccessMessage('⚡ Live Sync: Task #' + msg.task.id + ' updated in another session');
-                                } else if (msg.event === "TASK_DELETED" && msg.id) {
-                                    setTasks(prev => prev.filter(t => t.id !== msg.id));
-                                    setSuccessMessage('⚡ Live Sync: Task #' + msg.id + ' deleted in another session');
+                        <!-- Status Filter Tabs -->
+                        <div class="flex items-center gap-1.5 bg-zinc-900 p-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('ALL')" hidden="{filter === 'ALL'}">All</button>
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'ALL'}">All</button>
+
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('TODO')" hidden="{filter === 'TODO'}">TODO</button>
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'TODO'}">TODO</button>
+
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('IN_PROGRESS')" hidden="{filter === 'IN_PROGRESS'}">In Progress</button>
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'IN_PROGRESS'}">In Progress</button>
+
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('DONE')" hidden="{filter === 'DONE'}">Done</button>
+                            <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'DONE'}">Done</button>
+                        </div>
+                    </div>
+
+                    <!-- Initial Loading State -->
+                    <div class="p-12 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800/80" hidden="{!isLoading}">
+                        <div class="inline-flex items-center gap-2 text-sm text-zinc-400">
+                            <svg class="animate-spin w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Loading tasks via PulsePoint RPC...
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="p-12 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800/80" hidden="{isLoading || tasks.length > 0}">
+                        <div class="w-12 h-12 rounded-xl bg-zinc-800/60 border border-zinc-700/40 text-zinc-500 flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-zinc-300">No tasks found</p>
+                        <p class="text-xs text-zinc-500 mt-1">Create your first task using the form above to get started.</p>
+                    </div>
+
+                    <!-- Reactive Task Cards -->
+                    <div class="grid grid-cols-1 gap-3.5" hidden="{isLoading || tasks.length === 0}">
+                        <template pp-for="task in filteredTasks">
+                            <div key="{task.id}" class="bg-zinc-900/80 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 rounded-xl p-4 sm:p-5 transition duration-150 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="space-y-1">
+                                            <h3 class="text-base font-semibold text-zinc-100">{task.title}</h3>
+                                            <p class="text-xs text-zinc-500 font-mono">
+                                                ID: #{task.id} &bull; Created: {task.createdAt ? task.createdAt.replace('T', ' ').substring(0, 16) : ''}
+                                            </p>
+                                        </div>
+
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            <!-- Status Badges -->
+                                            <span hidden="{task.status !== 'TODO'}" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60">TODO</span>
+                                            <span hidden="{task.status !== 'IN_PROGRESS'}" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">IN PROGRESS</span>
+                                            <span hidden="{task.status !== 'DONE'}" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">DONE</span>
+
+                                            <!-- Priority Badges -->
+                                            <span hidden="{task.priority !== 'HIGH'}" class="px-2 py-0.5 rounded-md text-xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20">HIGH</span>
+                                            <span hidden="{task.priority !== 'MEDIUM'}" class="px-2 py-0.5 rounded-md text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">MEDIUM</span>
+                                            <span hidden="{task.priority !== 'LOW'}" class="px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/50">LOW</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-sm text-zinc-400 mt-2.5 leading-relaxed whitespace-pre-wrap" hidden="{!task.description}">{task.description}</p>
+                                </div>
+
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 mt-4 border-t border-zinc-800/80">
+                                    <!-- Move Status Controls -->
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-xs text-zinc-500 mr-1">Move:</span>
+                                        <button type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors" hidden="{task.status === 'TODO'}" onclick="changeStatus(task.id, 'TODO')">TODO</button>
+                                        <button type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors" hidden="{task.status === 'IN_PROGRESS'}" onclick="changeStatus(task.id, 'IN_PROGRESS')">IN_PROGRESS</button>
+                                        <button type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-colors" hidden="{task.status === 'DONE'}" onclick="changeStatus(task.id, 'DONE')">DONE</button>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                                        <button type="button" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-colors" onclick="handleStreamAudit(task.id)">
+                                            ⚡ Audit (SSE)
+                                        </button>
+                                        <button type="button" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-colors" onclick="promptUpload(task.id)">
+                                            📎 Attach
+                                        </button>
+                                        <button type="button" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors" onclick="handleDeleteTask(task.id)">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </section>
+
+                <!-- PulsePoint Component Script -->
+                <script>
+                    const [tasks, setTasks] = pp.state([]);
+                    const [filter, setFilter] = pp.state('ALL');
+                    const [isLoading, setIsLoading] = pp.state(true);
+                    const [isSubmitting, setIsSubmitting] = pp.state(false);
+                    const [errorMessage, setErrorMessage] = pp.state('');
+                    const [successMessage, setSuccessMessage] = pp.state('');
+                    const [titleError, setTitleError] = pp.state('');
+                    const [descError, setDescError] = pp.state('');
+
+                    // Multipart Upload state
+                    const [uploadTaskId, setUploadTaskId] = pp.state(null);
+                    const [uploadProgress, setUploadProgress] = pp.state(0);
+                    const [isUploading, setIsUploading] = pp.state(false);
+
+                    // SSE Streaming state
+                    const [auditTaskId, setAuditTaskId] = pp.state(null);
+                    const [auditPercent, setAuditPercent] = pp.state(0);
+                    const [auditStep, setAuditStep] = pp.state('');
+                    const [isAuditing, setIsAuditing] = pp.state(false);
+
+                    // WebSocket Live Sync state
+                    const [liveSyncStatus, setLiveSyncStatus] = pp.state('Connecting...');
+
+                    // Dynamic Metrics
+                    const todoCount = tasks.filter(t => t.status === 'TODO').length;
+                    const inProgressCount = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+                    const doneCount = tasks.filter(t => t.status === 'DONE').length;
+
+                    // Initialize Named WebSocket for live multi-tab collaborative sync
+                    pp.effect(() => {
+                        try {
+                            pp.socket("tasks", {}, {
+                                onOpen: () => {
+                                    setLiveSyncStatus("Connected");
+                                },
+                                onMessage: (msg) => {
+                                    if (!msg || typeof msg !== "object") return;
+                                    if (msg.event === "TASK_CREATED" && msg.task) {
+                                        setTasks(prev => prev.some(t => t.id === msg.task.id) ? prev : [msg.task, ...prev]);
+                                        setSuccessMessage('⚡ Live Sync: Task #' + msg.task.id + ' created in another session');
+                                    } else if (msg.event === "TASK_UPDATED" && msg.task) {
+                                        setTasks(prev => prev.map(t => t.id === msg.task.id ? msg.task : t));
+                                        setSuccessMessage('⚡ Live Sync: Task #' + msg.task.id + ' updated in another session');
+                                    } else if (msg.event === "TASK_DELETED" && msg.id) {
+                                        setTasks(prev => prev.filter(t => t.id !== msg.id));
+                                        setSuccessMessage('⚡ Live Sync: Task #' + msg.id + ' deleted in another session');
+                                    }
+                                },
+                                onClose: () => {
+                                    setLiveSyncStatus("Disconnected");
                                 }
-                            },
-                            onClose: () => {
-                                setLiveSyncStatus("Disconnected");
-                            }
-                        });
-                    } catch (err) {
-                        console.warn("WebSocket connection error:", err);
-                        setLiveSyncStatus("Disconnected");
-                    }
-                }, []);
-
-                // Load initial tasks on mount via PulsePoint RPC
-                pp.effect(() => {
-                    loadTasks();
-                }, []);
-
-                const loadTasks = async () => {
-                    setIsLoading(true);
-                    setErrorMessage('');
-                    try {
-                        const result = await pp.rpc("listTasks");
-                        setTasks(result || []);
-                    } catch (err) {
-                        setErrorMessage(err.message || 'Failed to load tasks via RPC');
-                    } finally {
-                        setIsLoading(false);
-                    }
-                };
-
-                const handleCreateTask = async (event) => {
-                    event.preventDefault();
-                    const form = event.currentTarget;
-                    setIsSubmitting(true);
-                    setErrorMessage('');
-                    setSuccessMessage('');
-                    setTitleError('');
-                    setDescError('');
-
-                    try {
-                        const formData = new FormData(form);
-                        const payload = Object.fromEntries(formData.entries());
-
-                        const created = await pp.rpc("createTask", payload);
-                        setTasks([created, ...tasks]);
-                        setSuccessMessage('Task created successfully via PulsePoint RPC!');
-                        form.reset();
-                    } catch (err) {
-                        if (err.errors) {
-                            if (err.errors.title) setTitleError(err.errors.title.join(', '));
-                            if (err.errors.description) setDescError(err.errors.description.join(', '));
-                            const details = Object.values(err.errors).flat().join(', ');
-                            setErrorMessage('Validation error: ' + details);
-                        } else {
-                            setErrorMessage(err.message || 'Failed to create task via RPC');
+                            });
+                        } catch (err) {
+                            console.warn("WebSocket connection error:", err);
+                            setLiveSyncStatus("Disconnected");
                         }
-                    } finally {
-                        setIsSubmitting(false);
-                    }
-                };
+                    }, []);
 
-                const changeStatus = async (id, newStatus) => {
-                    setErrorMessage('');
-                    try {
-                        const updated = await pp.rpc("updateTask", { id: id, status: newStatus });
-                        setTasks(tasks.map(t => t.id === id ? updated : t));
-                        setSuccessMessage('Task #' + id + ' status updated to ' + newStatus);
-                    } catch (err) {
-                        setErrorMessage(err.message || 'Failed to update task status');
-                    }
-                };
+                    // Load initial tasks on mount via PulsePoint RPC
+                    pp.effect(() => {
+                        loadTasks();
+                    }, []);
 
-                const handleDeleteTask = async (id) => {
-                    if (!confirm('Are you sure you want to delete task #' + id + '?')) {
-                        return;
-                    }
-                    setErrorMessage('');
-                    try {
-                        await pp.rpc("deleteTask", { id: id });
-                        setTasks(tasks.filter(t => t.id !== id));
-                        setSuccessMessage('Task #' + id + ' deleted successfully.');
-                    } catch (err) {
-                        setErrorMessage(err.message || 'Failed to delete task');
-                    }
-                };
+                    const loadTasks = async () => {
+                        setIsLoading(true);
+                        setErrorMessage('');
+                        try {
+                            const result = await pp.rpc("listTasks");
+                            setTasks(result || []);
+                        } catch (err) {
+                            setErrorMessage(err.message || 'Failed to load tasks via RPC');
+                        } finally {
+                            setIsLoading(false);
+                        }
+                    };
 
-                const handleStreamAudit = async (taskId) => {
-                    setAuditTaskId(taskId);
-                    setAuditPercent(0);
-                    setAuditStep('Initiating SSE audit stream for task #' + taskId + '...');
-                    setIsAuditing(true);
-                    setErrorMessage('');
-                    try {
-                        await pp.rpc("streamTaskAudit", { taskId: taskId }, {
-                            onStream: (chunk) => {
-                                if (chunk && typeof chunk === "object") {
-                                    if (chunk.percent !== undefined) setAuditPercent(chunk.percent);
-                                    if (chunk.step) setAuditStep(chunk.step);
+                    const handleCreateTask = async (event) => {
+                        event.preventDefault();
+                        const form = event.currentTarget;
+                        setIsSubmitting(true);
+                        setErrorMessage('');
+                        setSuccessMessage('');
+                        setTitleError('');
+                        setDescError('');
+
+                        try {
+                            const formData = new FormData(form);
+                            const payload = Object.fromEntries(formData.entries());
+
+                            const created = await pp.rpc("createTask", payload);
+                            setTasks([created, ...tasks]);
+                            setSuccessMessage('Task created successfully via PulsePoint RPC!');
+                            form.reset();
+                        } catch (err) {
+                            if (err.errors) {
+                                if (err.errors.title) setTitleError(err.errors.title.join(', '));
+                                if (err.errors.description) setDescError(err.errors.description.join(', '));
+                                const details = Object.values(err.errors).flat().join(', ');
+                                setErrorMessage('Validation error: ' + details);
+                            } else {
+                                setErrorMessage(err.message || 'Failed to create task via RPC');
+                            }
+                        } finally {
+                            setIsSubmitting(false);
+                        }
+                    };
+
+                    const changeStatus = async (id, newStatus) => {
+                        setErrorMessage('');
+                        try {
+                            const updated = await pp.rpc("updateTask", { id: id, status: newStatus });
+                            setTasks(tasks.map(t => t.id === id ? updated : t));
+                            setSuccessMessage('Task #' + id + ' status updated to ' + newStatus);
+                        } catch (err) {
+                            setErrorMessage(err.message || 'Failed to update task status');
+                        }
+                    };
+
+                    const handleDeleteTask = async (id) => {
+                        if (!confirm('Are you sure you want to delete task #' + id + '?')) {
+                            return;
+                        }
+                        setErrorMessage('');
+                        try {
+                            await pp.rpc("deleteTask", { id: id });
+                            setTasks(tasks.filter(t => t.id !== id));
+                            setSuccessMessage('Task #' + id + ' deleted successfully.');
+                        } catch (err) {
+                            setErrorMessage(err.message || 'Failed to delete task');
+                        }
+                    };
+
+                    const handleStreamAudit = async (taskId) => {
+                        setAuditTaskId(taskId);
+                        setAuditPercent(0);
+                        setAuditStep('Initiating SSE audit stream for task #' + taskId + '...');
+                        setIsAuditing(true);
+                        setErrorMessage('');
+                        try {
+                            await pp.rpc("streamTaskAudit", { taskId: taskId }, {
+                                onStream: (chunk) => {
+                                    if (chunk && typeof chunk === "object") {
+                                        if (chunk.percent !== undefined) setAuditPercent(chunk.percent);
+                                        if (chunk.step) setAuditStep(chunk.step);
+                                    }
+                                },
+                                onStreamComplete: () => {
+                                    setAuditPercent(100);
+                                    setAuditStep('Audit stream completed successfully. Task is healthy!');
+                                    setTimeout(() => {
+                                        setIsAuditing(false);
+                                    }, 3500);
+                                },
+                                onStreamError: (err) => {
+                                    setAuditStep('Stream error: ' + (err.message || 'Stream interrupted'));
                                 }
-                            },
-                            onStreamComplete: () => {
-                                setAuditPercent(100);
-                                setAuditStep('Audit stream completed successfully. Task is healthy!');
-                                setTimeout(() => {
-                                    setIsAuditing(false);
-                                }, 3500);
-                            },
-                            onStreamError: (err) => {
-                                setAuditStep('Stream error: ' + (err.message || 'Stream interrupted'));
-                            }
-                        });
-                    } catch (err) {
-                        setAuditStep('Failed to stream audit: ' + (err.message || 'Error'));
-                    }
-                };
+                            });
+                        } catch (err) {
+                            setAuditStep('Failed to stream audit: ' + (err.message || 'Error'));
+                        }
+                    };
 
-                const promptUpload = (taskId) => {
-                    setUploadTaskId(taskId);
-                    const input = document.getElementById('task-file-input');
-                    if (input) input.click();
-                };
+                    const promptUpload = (taskId) => {
+                        setUploadTaskId(taskId);
+                        const input = document.getElementById('task-file-input');
+                        if (input) input.click();
+                    };
 
-                const handleFileUpload = async (event) => {
-                    const file = event.target.files[0];
-                    if (!file || !uploadTaskId) return;
-                    setIsUploading(true);
-                    setUploadProgress(0);
-                    setErrorMessage('');
-                    try {
-                        await pp.rpc("uploadTaskAttachment", {
-                            taskId: uploadTaskId,
-                            file: file,
-                            note: 'Attached via PulsePoint RPC'
-                        }, {
-                            onUploadProgress: ({ loaded, total, percent }) => {
-                                if (percent !== null) setUploadProgress(Math.round(percent));
-                            },
-                            onUploadComplete: () => {
-                                setUploadProgress(100);
-                                setSuccessMessage('File "' + file.name + '" uploaded successfully to Task #' + uploadTaskId);
-                                setTimeout(() => {
-                                    setIsUploading(false);
-                                }, 2500);
-                            }
-                        });
-                    } catch (err) {
-                        setErrorMessage('Upload failed: ' + (err.message || 'Error'));
-                        setIsUploading(false);
-                    }
-                    event.target.value = '';
-                };
+                    const handleFileUpload = async (event) => {
+                        const file = event.target.files[0];
+                        if (!file || !uploadTaskId) return;
+                        setIsUploading(true);
+                        setUploadProgress(0);
+                        setErrorMessage('');
+                        try {
+                            await pp.rpc("uploadTaskAttachment", {
+                                taskId: uploadTaskId,
+                                file: file,
+                                note: 'Attached via PulsePoint RPC'
+                            }, {
+                                onUploadProgress: ({ loaded, total, percent }) => {
+                                    if (percent !== null) setUploadProgress(Math.round(percent));
+                                },
+                                onUploadComplete: () => {
+                                    setUploadProgress(100);
+                                    setSuccessMessage('File "' + file.name + '" uploaded successfully to Task #' + uploadTaskId);
+                                    setTimeout(() => {
+                                        setIsUploading(false);
+                                    }, 2500);
+                                }
+                            });
+                        } catch (err) {
+                            setErrorMessage('Upload failed: ' + (err.message || 'Error'));
+                            setIsUploading(false);
+                        }
+                        event.target.value = '';
+                    };
 
-                // Computed filtered task list
-                const filteredTasks = tasks.filter(t => {
-                    if (filter === 'ALL') return true;
-                    return t.status === filter;
-                });
-            </script>
-        </div>
-    </template>
-</div>
+                    // Computed filtered task list
+                    const filteredTasks = tasks.filter(t => {
+                        if (filter === 'ALL') return true;
+                        return t.status === filter;
+                    });
+                </script>
+            </div>
+        </template>
+    </div>
 </body>
 </html>

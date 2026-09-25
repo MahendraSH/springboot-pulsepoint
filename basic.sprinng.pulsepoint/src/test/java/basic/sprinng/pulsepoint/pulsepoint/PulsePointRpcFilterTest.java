@@ -24,6 +24,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import basic.sprinng.pulsepoint.entity.TaskPriority;
+import basic.sprinng.pulsepoint.entity.TaskStatus;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,6 +38,9 @@ class PulsePointRpcFilterTest {
 
     @Mock
     private TaskService taskService;
+
+    @Mock
+    private basic.sprinng.pulsepoint.pulsepoint.websocket.TaskBroadcaster taskBroadcaster;
 
     private PulsePointRpcRegistry registry;
     private ObjectMapper objectMapper;
@@ -47,7 +54,7 @@ class PulsePointRpcFilterTest {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
 
-        TaskRpcRegistrar registrar = new TaskRpcRegistrar(taskService, registry, validator);
+        TaskRpcRegistrar registrar = new TaskRpcRegistrar(taskService, registry, validator, taskBroadcaster);
         registrar.registerFunctions();
 
         PulsePointRpcFilter rpcFilter = new PulsePointRpcFilter(registry, objectMapper);
@@ -188,5 +195,53 @@ class PulsePointRpcFilterTest {
                 .andExpect(jsonPath("$.id").value(42));
 
         verify(taskService).deleteTask(42L);
+    }
+
+    @Test
+    void rpcCall_StreamTaskAudit_ShouldReturnEventStream() throws Exception {
+        TaskResponse sample = new TaskResponse(
+                10L, "Sample Task", "Description",
+                "TODO", "HIGH",
+                LocalDateTime.now(), LocalDateTime.now()
+        );
+        when(taskService.getTask(10L)).thenReturn(sample);
+
+        String payload = "{\"taskId\": 10}";
+
+        mockMvc.perform(post("/tasks")
+                        .header("X-PP-RPC", "true")
+                        .header("X-PP-Function", "streamTaskAudit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "text/event-stream;charset=UTF-8"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"percent\":25")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"status\":\"VERIFIED\"")));
+    }
+
+    @Test
+    void rpcCall_UploadTaskAttachment_ShouldParseMultipartAndReturnSuccess() throws Exception {
+        TaskResponse sample = new TaskResponse(
+                10L, "Sample Task", "Description",
+                "TODO", "HIGH",
+                LocalDateTime.now(), LocalDateTime.now()
+        );
+        when(taskService.getTask(10L)).thenReturn(sample);
+
+        org.springframework.mock.web.MockMultipartFile mockFile = new org.springframework.mock.web.MockMultipartFile(
+                "file", "report.pdf", "application/pdf", "PDF binary content".getBytes()
+        );
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart("/tasks")
+                        .file(mockFile)
+                        .param("taskId", "10")
+                        .param("note", "Q3 Report")
+                        .header("X-PP-RPC", "true")
+                        .header("X-PP-Function", "uploadTaskAttachment"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.taskId").value(10))
+                .andExpect(jsonPath("$.filename").value("report.pdf"))
+                .andExpect(jsonPath("$.note").value("Q3 Report"));
     }
 }

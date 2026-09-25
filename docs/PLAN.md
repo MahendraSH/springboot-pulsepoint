@@ -10,7 +10,11 @@ Build a **small, focused CRUD application** using Spring Boot integrated with Pu
 4. Produce a reusable reference for Java developers adopting PulsePoint
 
 > [!IMPORTANT]
-> **Explicitly out of scope:** Complex authentication (multi-role admin/user), complex business logic, SSE streaming, WebSockets, SPA navigation, production deployment concerns. These can be explored in follow-up phases after the core RPC integration is proven.
+> **Explicitly out of scope (Initial Plan):** Complex authentication (multi-role admin/user), complex business logic, SSE streaming, WebSockets, SPA navigation, production deployment concerns. These can be explored in follow-up phases after the core RPC integration is proven.
+
+> [!NOTE]
+> **Implementation Status: COMPLETED & EXTENDED**
+> All initial phases (Spring Boot CRUD foundation, RPC wire protocol, CSRF bridging, and Bean Validation) have been successfully implemented and verified. Furthermore, the features originally considered out of scope (SSE Streaming, Named WebSockets Live Sync, and Multipart Uploads) were subsequently planned and delivered via [`PLAN_SSE_WEBSOCKET.md`](PLAN_SSE_WEBSOCKET.md). For current architecture, test suites (22 tests), and verification results (8/8 passed), refer to [**`WALKTHROUGH.md`**](WALKTHROUGH.md) and [**`../README.md`**](../README.md).
 
 ## Agreed Decisions
 - **Auth:** Single in-memory user (`demo` / `demo123`), session-based, CSRF enabled. No roles.

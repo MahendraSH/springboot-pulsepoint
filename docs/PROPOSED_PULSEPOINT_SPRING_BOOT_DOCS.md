@@ -412,3 +412,43 @@ const result = await pp.rpc("uploadAttachment", formData, {
 ```
 
 In `PulsePointRpcFilter`, inspect multipart requests using Spring's `StandardServletMultipartResolver` to extract `MultipartFile` attachments cleanly while preserving CSRF tokens.
+
+---
+
+## 10. Zero-Build Modern UI with Tailwind CSS
+
+To maintain the **zero Node.js / zero npm** architecture while delivering a modern, responsive design system:
+
+1. **Load Tailwind via CDN** in the Thymeleaf `<head>`:
+   ```html
+   <script src="https://cdn.tailwindcss.com"></script>
+   ```
+
+2. **Configure Tailwind Customizations In-Page**:
+   ```html
+   <script>
+       tailwind.config = {
+           darkMode: 'class',
+           theme: {
+               extend: {
+                   colors: {
+                       brand: {
+                           500: '#6366f1',
+                           600: '#4f46e5',
+                       }
+                   }
+               }
+           }
+       };
+   </script>
+   ```
+
+3. **Combine with PulsePoint State**:
+   Dynamic classes can be cleanly bound to PulsePoint reactive state:
+   ```html
+   <span class="px-2.5 py-1 text-xs font-semibold rounded-full {task.status === 'DONE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">
+       {task.status}
+   </span>
+   ```
+   > **Note:** Attribute values must always be enclosed in quotes (e.g. `class="..."`) to ensure strict HTML validity and prevent template parsing issues.
+

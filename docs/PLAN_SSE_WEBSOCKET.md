@@ -80,10 +80,10 @@ Browser Tab 1 (pp.socket)                       Browser Tab 2 (pp.socket)
 
 ### Step 1: SSE Streaming Integration (Phase 3) - [COMPLETED]
 - [x] **Spring Boot Streaming Infrastructure:**
-  - Created [`PulsePointStreamEmitter.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStreamEmitter.java) and functional interface [`PulsePointStream.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStream.java).
-  - Registered streaming RPC function `streamTaskAudit` in [`TaskRpcRegistrar.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) to simulate progressive task audits (25%, 50%, 75%, 100%).
+  - Created [`PulsePointStreamEmitter.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStreamEmitter.java) and functional interface [`PulsePointStream.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStream.java).
+  - Registered streaming RPC function `streamTaskAudit` in [`TaskRpcRegistrar.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) to simulate progressive task audits (25%, 50%, 75%, 100%).
 - [x] **PulsePoint RPC Filter Update:**
-  - Updated [`PulsePointRpcFilter.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointRpcFilter.java) to detect `PulsePointStream`, set `Content-Type: text/event-stream;charset=UTF-8`, disable response buffering, and emit chunks as `data: <json>\n\n`.
+  - Updated [`PulsePointRpcFilter.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointRpcFilter.java) to detect `PulsePointStream`, set `Content-Type: text/event-stream;charset=UTF-8`, disable response buffering, and emit chunks as `data: <json>\n\n`.
 - [x] **Frontend UI Integration (`tasks.html`):**
   - Added "⚡ Audit (SSE)" button to each task row.
   - Implemented `pp.rpc("streamTaskAudit", { taskId }, { onStream, onStreamComplete, onStreamError })`.
@@ -94,14 +94,14 @@ Browser Tab 1 (pp.socket)                       Browser Tab 2 (pp.socket)
 ### Step 2: Named WebSockets Integration (Phase 4) - [COMPLETED]
 - [x] **Spring Boot WebSocket Infrastructure:**
   - Added `spring-boot-starter-websocket` dependency.
-  - Created [`WebSocketConfig.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/WebSocketConfig.java) registering `/__pulsepoint/ws`.
-  - Created [`PulsePointWebSocketHandler.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/PulsePointWebSocketHandler.java):
+  - Created [`WebSocketConfig.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/WebSocketConfig.java) registering `/__pulsepoint/ws`.
+  - Created [`PulsePointWebSocketHandler.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/PulsePointWebSocketHandler.java):
     - Parses channel query parameter `name` (`/__pulsepoint/ws?name=tasks`).
     - Intercepts PulsePoint 25-second control frame heartbeat `{"__pp": "ping"}` and responds with `{"__pp": "pong"}`.
     - Tracks active client sessions in thread-safe concurrent sets.
 - [x] **Collaborative Task Broadcasting Service:**
-  - Created [`TaskBroadcaster.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/TaskBroadcaster.java).
-  - Injected into [`TaskRpcRegistrar.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) to broadcast `TASK_CREATED`, `TASK_UPDATED`, and `TASK_DELETED` events across all open sessions.
+  - Created [`TaskBroadcaster.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/TaskBroadcaster.java).
+  - Injected into [`TaskRpcRegistrar.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) to broadcast `TASK_CREATED`, `TASK_UPDATED`, and `TASK_DELETED` events across all open sessions.
 - [x] **Frontend UI Integration (`tasks.html`):**
   - Initialized `pp.socket("tasks", {}, { onOpen, onMessage, onClose })`.
   - Synchronizes task state reactively across open browser tabs without full page reloads.

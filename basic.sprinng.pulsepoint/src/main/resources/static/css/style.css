@@ -1,3 +1,8 @@
+/* Ensure HTML5 [hidden] attribute always overrides Tailwind display utilities (flex, inline-flex, block, grid) */
+[hidden] {
+    display: none !important;
+}
+
 /* Custom clean utilities and animations complementary to Tailwind CSS */
 @layer utilities {
     /* Custom scrollbar */

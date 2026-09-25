@@ -138,7 +138,7 @@ The evaluation was conducted by constructing a complete, functioning Task Manage
 
 ## 5. Live Browser End-to-End Test Execution
 
-The complete 7-step interactive browser test suite was executed in an interactive Chromium engine on `http://localhost:8080`, exercising every layer of the monolith without page reloads or console errors:
+The complete 8-step interactive browser test suite was executed in an interactive Chromium engine on `http://localhost:8080`, exercising every layer of the monolith without page reloads or console errors:
 
 | # | Feature / Test Case | Actions & Triggers | Observations & Result | Status |
 |---|---------------------|--------------------|------------------------|:------:|
@@ -149,9 +149,16 @@ The complete 7-step interactive browser test suite was executed in an interactiv
 | **5** | **Server-Sent Events (SSE) Streaming** | Clicked `⚡ Audit (SSE)` on Task #1. | Real-time card appeared, streaming progress (25% → 50% → 75% → 100%) and step messages via `text/event-stream`. | **PASS** |
 | **6** | **Multipart File Upload with Progress** | Clicked `📎 Attach`, selected `test-attachment.txt`. | Upload progress bar tracked upload chunks via `onUploadProgress`, finishing at 100% with green success notice. | **PASS** |
 | **7** | **Multi-Tab WebSocket Live Sync** | Opened Tab 2. Created `"WebSocket Sync Task"` in Tab 1. Checked Tab 2. | Tab 2 dynamically received `TASK_CREATED` over `ws://` and rendered the new task without any manual reload. | **PASS** |
+| **8** | **Tailwind CSS & Mobile Responsiveness** | Resized viewport across mobile (375x667), tablet (768x1024), and desktop (1280x800). | Fluid layout reflowed navigation bar, metrics grid, input controls, and task cards with zero horizontal clipping. | **PASS** |
 
 ### Visual Verification Artifacts
 
+- **Modernized UI & Responsive Design:**
+  - Modernized Login Page: [`screenshots/login_page_1790321882096.png`](screenshots/login_page_1790321882096.png)
+  - Responsive Tasks Dashboard (Desktop): [`screenshots/tasks_page_dashboard_1790321972386.png`](screenshots/tasks_page_dashboard_1790321972386.png)
+  - Mobile Viewport (375x667 Header & Form): [`screenshots/mobile_view_top_1790322286184.png`](screenshots/mobile_view_top_1790322286184.png)
+  - Mobile Viewport (375x667 Task Cards): [`screenshots/mobile_view_portrait_1790322262913.png`](screenshots/mobile_view_portrait_1790322262913.png)
+  - Tablet Viewport (768x1024): [`screenshots/tablet_view_1790322311058.png`](screenshots/tablet_view_1790322311058.png)
 - **Form Validation & Dynamic Creation:**
   - Empty title validation: [`screenshots/empty_title_validation_1790160129534.png`](screenshots/empty_title_validation_1790160129534.png)
   - Valid task created: [`screenshots/valid_task_creation_1790160337821.png`](screenshots/valid_task_creation_1790160337821.png)
@@ -163,8 +170,9 @@ The complete 7-step interactive browser test suite was executed in an interactiv
   - File upload byte transmission: [`screenshots/file_upload_progress_1790162452519.png`](screenshots/file_upload_progress_1790162452519.png)
 - **Multi-Tab WebSocket Live Sync:**
   - Live broadcast synchronization: [`screenshots/websocket_live_sync_1790163508917.png`](screenshots/websocket_live_sync_1790163508917.png)
-- **Complete Session Video:**
-  - Full interactive recording: [**`full_interactive_verification_1790159186402.webp`**](screenshots/full_interactive_verification_1790159186402.webp)
+- **Interactive Session Recordings:**
+  - Tailwind CSS & Mobile/Desktop Verification: [**`tailwind_responsive_test_1790321816150.webp`**](screenshots/tailwind_responsive_test_1790321816150.webp)
+  - Full Interactive Verification Video: [**`full_interactive_verification_1790159186402.webp`**](screenshots/full_interactive_verification_1790159186402.webp)
 
 ---
 

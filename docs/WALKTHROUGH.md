@@ -30,34 +30,34 @@ Spring Boot Application Monolith
 ## What Was Implemented
 
 ### 1. Spring Boot Monolithic Backend
-- **Entities & Schema:** [`Task.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/entity/Task.java) with `TaskStatus` and `TaskPriority` enums, timestamps, and JPA lifecycle hooks.
-- **Service Layer:** Interface [`TaskService`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/service/TaskService.java) and implementation [`TaskServiceImpl`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/service/impl/TaskServiceImpl.java) using constructor injection.
-- **DTOs:** [`CreateTaskRequest`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/dto/CreateTaskRequest.java), [`UpdateTaskRequest`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/dto/UpdateTaskRequest.java), [`TaskResponse`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/dto/TaskResponse.java).
-- **Security:** [`SecurityConfig`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/SecurityConfig.java) with session auth, in-memory user (`demo`/`demo123`), and JSON-aware exception handling for `X-PP-RPC` requests.
+- **Entities & Schema:** [`Task.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/entity/Task.java) with `TaskStatus` and `TaskPriority` enums, timestamps, and JPA lifecycle hooks.
+- **Service Layer:** Interface [`TaskService`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/service/TaskService.java) and implementation [`TaskServiceImpl`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/service/impl/TaskServiceImpl.java) using constructor injection.
+- **DTOs:** [`CreateTaskRequest`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/dto/CreateTaskRequest.java), [`UpdateTaskRequest`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/dto/UpdateTaskRequest.java), [`TaskResponse`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/dto/TaskResponse.java).
+- **Security:** [`SecurityConfig`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/SecurityConfig.java) with session auth, in-memory user (`demo`/`demo123`), and JSON-aware exception handling for `X-PP-RPC` requests.
 
 ### 2. PulsePoint v2 Wire Protocol Integration
-- **Function Registry:** [`PulsePointRpcRegistry`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointRpcRegistry.java) allows registering named RPC handlers safely without dynamic code evaluation.
-- **Wire Protocol Filter:** [`PulsePointRpcFilter`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointRpcFilter.java):
+- **Function Registry:** [`PulsePointRpcRegistry`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointRpcRegistry.java) allows registering named RPC handlers safely without dynamic code evaluation.
+- **Wire Protocol Filter:** [`PulsePointRpcFilter`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointRpcFilter.java):
   - Intercepts `POST` requests where `X-PP-RPC: true`
   - Extracts the requested operation from `X-PP-Function`
   - Parses JSON arguments or multipart form uploads
   - Detects streaming returns (`PulsePointStream`) and switches output to `Content-Type: text/event-stream;charset=UTF-8`
   - Returns `application/json` with the exact payload format PulsePoint expects (including RFC-compliant `{ "error": "...", "errors": { ... } }` error envelopes).
-- **CSRF Bridge:** [`PulsePointCsrfFilter`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointCsrfFilter.java) + `CookieCsrfTokenRepository.setCookieName("pp_csrf")` exposes the token for the client JS to send as `X-CSRF-Token`.
-- **RPC Registrar:** [`TaskRpcRegistrar`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) exposes `listTasks`, `getTask`, `createTask`, `updateTask`, `deleteTask`, `streamTaskAudit`, and `uploadTaskAttachment`.
+- **CSRF Bridge:** [`PulsePointCsrfFilter`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/PulsePointCsrfFilter.java) + `CookieCsrfTokenRepository.setCookieName("pp_csrf")` exposes the token for the client JS to send as `X-CSRF-Token`.
+- **RPC Registrar:** [`TaskRpcRegistrar`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/handler/TaskRpcRegistrar.java) exposes `listTasks`, `getTask`, `createTask`, `updateTask`, `deleteTask`, `streamTaskAudit`, and `uploadTaskAttachment`.
 
 ### 3. Server-Sent Events (SSE) Streaming (Phase 3)
-- [`PulsePointStreamEmitter.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStreamEmitter.java) flushes SSE chunks immediately over the HTTP response stream in format `data: <json>\n\n`.
+- [`PulsePointStreamEmitter.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/stream/PulsePointStreamEmitter.java) flushes SSE chunks immediately over the HTTP response stream in format `data: <json>\n\n`.
 - Registered `streamTaskAudit`: emits live audit steps (`25%`, `50%`, `75%`, `100%`) for long-running task operations.
 - Client consumed seamlessly via PulsePoint's `pp.rpc("streamTaskAudit", { taskId }, { onStream, onStreamComplete, onStreamError })`.
 - Reactive progress bar (`{auditPercent}%`) and status indicator (`{auditStep}`) update with zero page flicker.
 
 ### 4. Named WebSockets & Collaborative Live Sync (Phase 4)
-- [`WebSocketConfig.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/WebSocketConfig.java) maps `/__pulsepoint/ws`.
-- [`PulsePointWebSocketHandler.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/PulsePointWebSocketHandler.java):
+- [`WebSocketConfig.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/config/WebSocketConfig.java) maps `/__pulsepoint/ws`.
+- [`PulsePointWebSocketHandler.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/PulsePointWebSocketHandler.java):
   - Inspects query param `name` (e.g. `/__pulsepoint/ws?name=tasks`).
   - Handles PulsePoint's 25-second control frame heartbeat: when client sends `{"__pp": "ping"}`, backend immediately responds `{"__pp": "pong"}` to prevent 45-second connection drops.
-- [`TaskBroadcaster.java`](basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/TaskBroadcaster.java):
+- [`TaskBroadcaster.java`](../basic.sprinng.pulsepoint/src/main/java/basic/sprinng/pulsepoint/pulsepoint/websocket/TaskBroadcaster.java):
   - Connected sessions receive real-time JSON frames: `TASK_CREATED`, `TASK_UPDATED`, `TASK_DELETED`.
 - Multiple browser tabs synchronize instantaneously without polling or manual refreshes.
 - Live connection indicator: `● Live Sync: {liveSyncStatus}`.
@@ -80,7 +80,7 @@ Ran 22 automated tests via Maven Surefire:
 - `ApplicationTests`: **1 test passing** (context load)
 
 ### Live PostgreSQL End-to-End
-- Seeded with 40 records via [`schema.sql`](schema.sql)
+- Seeded with 40 records via [`schema.sql`](../schema.sql)
 - Loaded reactively via `listTasks` RPC
 - Inserted tasks reactively via `createTask` RPC
 - Validated error states and JSON error responses.
@@ -102,23 +102,23 @@ The full interactive browser test suite was executed in an interactive Chromium 
 #### Visual Evidence & Snapshots
 
 - **Step 3 (Form Validation & Dynamic Creation):**
-  - Empty title validation: [`docs/screenshots/empty_title_validation_1790160129534.png`](docs/screenshots/empty_title_validation_1790160129534.png)
-  - Valid task created: [`docs/screenshots/valid_task_creation_1790160337821.png`](docs/screenshots/valid_task_creation_1790160337821.png)
+  - Empty title validation: [`screenshots/empty_title_validation_1790160129534.png`](screenshots/empty_title_validation_1790160129534.png)
+  - Valid task created: [`screenshots/valid_task_creation_1790160337821.png`](screenshots/valid_task_creation_1790160337821.png)
 
 - **Step 4 (Status Mutation & Reactive Deletion):**
-  - Status mutation and deletion: [`docs/screenshots/status_mutation_and_deletion_1790161888799.png`](docs/screenshots/status_mutation_and_deletion_1790161888799.png)
+  - Status mutation and deletion: [`screenshots/status_mutation_and_deletion_1790161888799.png`](screenshots/status_mutation_and_deletion_1790161888799.png)
 
 - **Step 5 (Real-Time SSE Audit Streaming):**
-  - Sequential audit stream: [`docs/screenshots/sse_audit_stream_1790162251926.png`](docs/screenshots/sse_audit_stream_1790162251926.png)
+  - Sequential audit stream: [`screenshots/sse_audit_stream_1790162251926.png`](screenshots/sse_audit_stream_1790162251926.png)
 
 - **Step 6 (Multipart Upload with Progress Tracking):**
-  - Byte transmission and completion: [`docs/screenshots/file_upload_progress_1790162452519.png`](docs/screenshots/file_upload_progress_1790162452519.png)
+  - Byte transmission and completion: [`screenshots/file_upload_progress_1790162452519.png`](screenshots/file_upload_progress_1790162452519.png)
 
 - **Step 7 (Multi-Tab WebSocket Live Sync):**
-  - Multi-tab reactive sync: [`docs/screenshots/websocket_live_sync_1790163508917.png`](docs/screenshots/websocket_live_sync_1790163508917.png)
+  - Multi-tab reactive sync: [`screenshots/websocket_live_sync_1790163508917.png`](screenshots/websocket_live_sync_1790163508917.png)
 
 #### Full Interactive Session Recording
-- Complete browser recording: [**`full_interactive_verification_1790159186402.webp`**](docs/screenshots/full_interactive_verification_1790159186402.webp)
+- Complete browser recording: [**`full_interactive_verification_1790159186402.webp`**](screenshots/full_interactive_verification_1790159186402.webp)
 
 ---
 

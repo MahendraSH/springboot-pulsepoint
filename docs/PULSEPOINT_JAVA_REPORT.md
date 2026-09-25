@@ -153,18 +153,18 @@ The complete 7-step interactive browser test suite was executed in an interactiv
 ### Visual Verification Artifacts
 
 - **Form Validation & Dynamic Creation:**
-  - Empty title validation: [`docs/screenshots/empty_title_validation_1790160129534.png`](docs/screenshots/empty_title_validation_1790160129534.png)
-  - Valid task created: [`docs/screenshots/valid_task_creation_1790160337821.png`](docs/screenshots/valid_task_creation_1790160337821.png)
+  - Empty title validation: [`screenshots/empty_title_validation_1790160129534.png`](screenshots/empty_title_validation_1790160129534.png)
+  - Valid task created: [`screenshots/valid_task_creation_1790160337821.png`](screenshots/valid_task_creation_1790160337821.png)
 - **Status Mutation & Deletion:**
-  - Status mutation and deletion: [`docs/screenshots/status_mutation_and_deletion_1790161888799.png`](docs/screenshots/status_mutation_and_deletion_1790161888799.png)
+  - Status mutation and deletion: [`screenshots/status_mutation_and_deletion_1790161888799.png`](screenshots/status_mutation_and_deletion_1790161888799.png)
 - **Real-Time SSE Audit Streaming:**
-  - Sequential audit stream: [`docs/screenshots/sse_audit_stream_1790162251926.png`](docs/screenshots/sse_audit_stream_1790162251926.png)
+  - Sequential audit stream: [`screenshots/sse_audit_stream_1790162251926.png`](screenshots/sse_audit_stream_1790162251926.png)
 - **Multipart Upload with Progress:**
-  - File upload byte transmission: [`docs/screenshots/file_upload_progress_1790162452519.png`](docs/screenshots/file_upload_progress_1790162452519.png)
+  - File upload byte transmission: [`screenshots/file_upload_progress_1790162452519.png`](screenshots/file_upload_progress_1790162452519.png)
 - **Multi-Tab WebSocket Live Sync:**
-  - Live broadcast synchronization: [`docs/screenshots/websocket_live_sync_1790163508917.png`](docs/screenshots/websocket_live_sync_1790163508917.png)
+  - Live broadcast synchronization: [`screenshots/websocket_live_sync_1790163508917.png`](screenshots/websocket_live_sync_1790163508917.png)
 - **Complete Session Video:**
-  - Full interactive recording: [**`full_interactive_verification_1790159186402.webp`**](docs/screenshots/full_interactive_verification_1790159186402.webp)
+  - Full interactive recording: [**`full_interactive_verification_1790159186402.webp`**](screenshots/full_interactive_verification_1790159186402.webp)
 
 ---
 

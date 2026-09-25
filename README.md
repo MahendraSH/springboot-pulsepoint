@@ -107,17 +107,22 @@ The application was completely verified in an interactive Chromium environment a
 
 ---
 
-## 📚 Evaluation & Documentation Reports
+## 📚 Documentation & Architectural Reports
 
-Detailed architectural findings, issue catalog, and evaluation scorecards are included in the repository:
+Comprehensive technical documentation, evaluation reports, issue analyses, and design blueprints are organized in the [`docs/`](docs/) directory:
 
 | Document | Description |
 |---|---|
-| [**`WALKTHROUGH.md`**](WALKTHROUGH.md) | Technical walkthrough of the architecture, components, SSE, WebSockets, and verification results. |
-| [**`PULSEPOINT_JAVA_REPORT.md`**](PULSEPOINT_JAVA_REPORT.md) | Executive evaluation report answering key questions, comparing with HTMX/Vaadin, and assessing feasibility. |
-| [**`PULSEPOINT_JAVA_ISSUES.md`**](PULSEPOINT_JAVA_ISSUES.md) | Catalog of 6 discovered friction points & bugs with reproduction steps, root causes, workarounds, and proposed fixes. |
-| [**`PULSEPOINT_AGENTIC_TEST.md`**](PULSEPOINT_AGENTIC_TEST.md) | AI-agent usability evaluation matrix and a 14-dimension complexity assessment scorecard (scored 1–10). |
-| [**`PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md`**](PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md) | Turnkey official documentation guide for Spring Boot developers integrating PulsePoint v2. |
+| [**`PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md`**](docs/PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md) | **Turnkey Official Guide**: Complete setup for Spring Boot developers (Security, CSRF, RPC, SSE, WebSockets, Multipart). |
+| [**`WALKTHROUGH.md`**](docs/WALKTHROUGH.md) | **Technical Implementation Walkthrough**: Full breakdown of the backend monolith, RPC filter, tests, and interactive E2E verification. |
+| [**`PULSEPOINT_JAVA_REPORT.md`**](docs/PULSEPOINT_JAVA_REPORT.md) | **Comprehensive Evaluation Report**: Executive analysis answering primary feasibility questions and comparing with HTMX / Vaadin. |
+| [**`PULSEPOINT_JAVA_ISSUES.md`**](docs/PULSEPOINT_JAVA_ISSUES.md) | **Friction & Bug Catalog**: Detailed analysis of 6 discovered issues (JSON error handling, CSRF cookie naming, Jackson serialization) with workarounds and fixes. |
+| [**`PULSEPOINT_AGENTIC_TEST.md`**](docs/PULSEPOINT_AGENTIC_TEST.md) | **AI-Agent Usability Report**: Evaluation matrix tracking how an autonomous AI coding agent navigated documentation, with a 14-dimension complexity scorecard. |
+| [**`PLAN_SSE_WEBSOCKET.md`**](docs/PLAN_SSE_WEBSOCKET.md) | **SSE & WebSocket Plan**: Architectural blueprint and step-by-step implementation plan for SSE & WebSockets. |
+| [**`PLAN.md`**](docs/PLAN.md) | **Foundational Architecture Plan**: Initial monolithic architecture and phased design specification. |
+| [**`llms.md`**](docs/llms.md) | **PulsePoint Wire Contract**: PulsePoint v2 runtime specification, hooks, directives, and wire protocols. |
+
+> 💡 *Browse all documentation, design plans, and screenshots in the [**Documentation Hub (`docs/README.md`)**](docs/README.md).*
 
 ---
 
@@ -127,12 +132,18 @@ Detailed architectural findings, issue catalog, and evaluation scorecards are in
 springboot-pulsepoint-basic-demo/
 ├── README.md                               # Project overview and quick start guide
 ├── demo.mp4                                # Complete interactive E2E verification demo video
-├── WALKTHROUGH.md                          # Implementation walkthrough (RPC, SSE, WebSockets)
-├── PULSEPOINT_JAVA_REPORT.md               # Main architectural evaluation report
-├── PULSEPOINT_JAVA_ISSUES.md               # Catalog of 6 issues & workarounds
-├── PULSEPOINT_AGENTIC_TEST.md              # AI-agent usability report & complexity scorecard
-├── PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md # Proposed official Spring Boot guide
 ├── schema.sql                              # PostgreSQL database seed script
+├── docs/                                   # Documentation, evaluation reports, and assets
+│   ├── README.md                           # Documentation hub and table of contents
+│   ├── PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md # Turnkey official Spring Boot guide
+│   ├── WALKTHROUGH.md                      # Technical implementation walkthrough
+│   ├── PULSEPOINT_JAVA_REPORT.md           # Main architectural evaluation report
+│   ├── PULSEPOINT_JAVA_ISSUES.md           # Catalog of 6 issues, root causes & fixes
+│   ├── PULSEPOINT_AGENTIC_TEST.md          # AI-agent usability report & complexity scorecard
+│   ├── PLAN_SSE_WEBSOCKET.md               # SSE & WebSockets design plan
+│   ├── PLAN.md                             # Foundational monolithic architecture plan
+│   ├── llms.md                             # PulsePoint v2 specification & wire protocol
+│   └── screenshots/                        # Interactive browser E2E test captures & recording
 └── basic.sprinng.pulsepoint/               # Spring Boot Application
     ├── pom.xml                             # Maven configuration (Java 21, Spring Boot 3.x)
     └── src/

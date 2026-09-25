@@ -4,6 +4,14 @@ A monolithic **Java 21 / Spring Boot 3.x** reference application demonstrating f
 
 ---
 
+## 🎬 Live Interactive Demo
+
+https://github.com/MahendraSH/springboot-pulsepoint/raw/main/demo.mp4
+
+> **Full E2E Demo Video** ([`demo.mp4`](demo.mp4)): Watch the complete 7-step interactive verification in action — including reactive RPC CRUD, instant client filtering, live Jakarta Bean Validation feedback, Server-Sent Events (SSE) progress streaming, multipart file uploads, and cross-tab WebSocket synchronization.
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
@@ -95,7 +103,7 @@ The application was completely verified in an interactive Chromium environment a
 6. **Multipart File Uploads**: Real-time byte upload tracking via `onUploadProgress` to 100% and confirmation alert.
 7. **Multi-Tab WebSocket Live Sync**: Cross-tab real-time task synchronization over `ws://localhost:8080/__pulsepoint/ws?name=tasks` without page reloads.
 
-*Visual evidence, screenshots, and full session video recording are preserved in [`docs/screenshots/`](docs/screenshots/).*
+*Visual evidence, screenshots, and full session video recording are preserved in [`docs/screenshots/`](docs/screenshots/) and [`demo.mp4`](demo.mp4).*
 
 ---
 
@@ -118,6 +126,7 @@ Detailed architectural findings, issue catalog, and evaluation scorecards are in
 ```text
 springboot-pulsepoint-basic-demo/
 ├── README.md                               # Project overview and quick start guide
+├── demo.mp4                                # Complete interactive E2E verification demo video
 ├── WALKTHROUGH.md                          # Implementation walkthrough (RPC, SSE, WebSockets)
 ├── PULSEPOINT_JAVA_REPORT.md               # Main architectural evaluation report
 ├── PULSEPOINT_JAVA_ISSUES.md               # Catalog of 6 issues & workarounds

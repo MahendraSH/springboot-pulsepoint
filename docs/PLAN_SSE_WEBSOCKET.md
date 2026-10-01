@@ -137,3 +137,12 @@ Browser Tab 1 (pp.socket)                       Browser Tab 2 (pp.socket)
 - [x] Updated `PULSEPOINT_AGENTIC_TEST.md` marking SSE and WebSocket rows as **Pass**.
 - [x] Updated `PROPOSED_PULSEPOINT_SPRING_BOOT_DOCS.md` with SSE and WebSocket guides.
 - [x] Updated `README.md` with 22-test instructions and feature details.
+
+---
+
+### Step 6: Gatling Concurrency & Load Testing - [COMPLETED]
+- [x] Integrated `gatling-charts-highcharts` (v3.10.5) and `gatling-maven-plugin` (v4.8.0) using Java 21 native DSL.
+- [x] Created [`PulsePointRpcStressSimulation.java`](../basic.sprinng.pulsepoint/src/test/java/basic/sprinng/pulsepoint/simulation/PulsePointRpcStressSimulation.java) for high-concurrency RPC CRUD (700 requests, 100% OK, mean 9ms).
+- [x] Created [`PulsePointRealtimeSimulation.java`](../basic.sprinng.pulsepoint/src/test/java/basic/sprinng/pulsepoint/simulation/PulsePointRealtimeSimulation.java) for concurrent WebSockets, ping/pong heartbeats, and SSE streams (270 requests, 100% OK).
+- [x] Created [`PulsePointFullLoadSimulation.java`](../basic.sprinng.pulsepoint/src/test/java/basic/sprinng/pulsepoint/simulation/PulsePointFullLoadSimulation.java) for end-to-end user journeys (650 requests, 99.69% OK).
+- [x] Published complete analysis and architectural tuning guide in [`GATLING_PERFORMANCE_REPORT.md`](GATLING_PERFORMANCE_REPORT.md).

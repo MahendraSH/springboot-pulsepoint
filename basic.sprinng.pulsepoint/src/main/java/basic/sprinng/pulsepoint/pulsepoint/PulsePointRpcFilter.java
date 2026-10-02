@@ -92,6 +92,9 @@ public class PulsePointRpcFilter extends OncePerRequestFilter {
         } catch (PulsePointValidationException e) {
             log.warn("Field validation error during RPC execution: {}", e.getMessage());
             sendError(response, HttpStatus.BAD_REQUEST, e.getMessage(), e.getErrors());
+        } catch (org.springframework.security.access.AccessDeniedException e) {
+            log.warn("Access denied during RPC execution: {}", e.getMessage());
+            sendError(response, HttpStatus.FORBIDDEN, e.getMessage(), null);
         } catch (ConflictException e) {
             log.warn("Conflict during RPC execution: {}", e.getMessage());
             sendError(response, HttpStatus.CONFLICT, e.getMessage(), null);

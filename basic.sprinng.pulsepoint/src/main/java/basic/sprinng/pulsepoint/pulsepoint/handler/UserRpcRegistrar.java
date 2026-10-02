@@ -39,10 +39,12 @@ public class UserRpcRegistrar {
     }
 
     private Object listUsers(Map<String, Object> params) {
+        checkAdminAccess();
         return userService.listUsers();
     }
 
     private Object createUser(Map<String, Object> params) {
+        checkAdminAccess();
         String username = (String) params.get("username");
         String email = (String) params.get("email");
         String role = (String) params.get("role");
@@ -58,9 +60,18 @@ public class UserRpcRegistrar {
     }
 
     private Object deleteUser(Map<String, Object> params) {
+        checkAdminAccess();
         Long id = extractLong(params, "id");
         userService.deleteUser(id);
         return Map.of("success", true, "id", id);
+    }
+
+    private void checkAdminAccess() {
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new org.springframework.security.access.AccessDeniedException("Permission denied");
+        }
     }
 
     private <T> void validateRequest(T request) {

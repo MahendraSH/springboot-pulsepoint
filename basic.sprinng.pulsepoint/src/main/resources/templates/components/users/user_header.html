@@ -15,7 +15,7 @@
                 <p class="text-xs sm:text-sm text-zinc-400 mb-2">Spring Boot 3.x Backend &bull; PulsePoint v2 Reactive RPC</p>
                 <nav class="flex items-center gap-2">
                     <a th:href="@{/tasks}" class="px-3 py-1 rounded-md text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition">Tasks</a>
-                    <a th:href="@{/users}" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm">Manage Users</a>
+                    <a th:href="@{/users}" sec:authorize="hasRole('ADMIN')" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm">Manage Users</a>
                 </nav>
             </div>
         </div>

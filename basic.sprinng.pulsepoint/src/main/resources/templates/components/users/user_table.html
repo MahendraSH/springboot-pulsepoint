@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- User List Table Component -->
+    <section th:fragment="table-section" class="space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+            <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold text-white">System Users</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/60">{users.length}</span>
+            </div>
+        </div>
+
+        <!-- Initial Loading State -->
+        <div class="p-12 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800/80" hidden="{!isLoading}">
+            <div class="inline-flex items-center gap-2 text-sm text-zinc-400">
+                <svg class="animate-spin w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading users via PulsePoint RPC...
+            </div>
+        </div>
+
+        <!-- User Table -->
+        <div class="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/80" hidden="{isLoading}">
+            <table class="w-full text-left text-sm text-zinc-300">
+                <thead class="bg-zinc-950/80 text-xs uppercase text-zinc-400 border-b border-zinc-800">
+                    <tr>
+                        <th class="px-4 py-3 font-medium">ID</th>
+                        <th class="px-4 py-3 font-medium">Username</th>
+                        <th class="px-4 py-3 font-medium">Email</th>
+                        <th class="px-4 py-3 font-medium">Role</th>
+                        <th class="px-4 py-3 font-medium">Created</th>
+                        <th class="px-4 py-3 font-medium text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-800/60">
+                    <template pp-for="u in users">
+                        <tr key="{u.id}" class="hover:bg-zinc-800/40 transition">
+                            <td class="px-4 py-3 font-mono text-xs text-zinc-400">#{u.id}</td>
+                            <td class="px-4 py-3 font-semibold text-zinc-100">{u.username}</td>
+                            <td class="px-4 py-3 text-zinc-400">{u.email}</td>
+                            <td class="px-4 py-3">
+                                <span hidden="{u.role !== 'ROLE_ADMIN'}" class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">ADMIN</span>
+                                <span hidden="{u.role === 'ROLE_ADMIN'}" class="px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/50">USER</span>
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs text-zinc-500">{u.createdAt?.replace('T', ' ').substring(0, 16) || ''}</td>
+                            <td class="px-4 py-3 text-right">
+                                <div th:replace="~{components/ui/button :: action(label='Remove', clickExpr='handleDeleteUser(u.id)', variantClass='bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20')}"></div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</body>
+</html>

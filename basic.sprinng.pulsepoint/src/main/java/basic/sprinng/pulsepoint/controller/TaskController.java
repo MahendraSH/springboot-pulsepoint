@@ -29,4 +29,9 @@ public class TaskController {
         model.addAttribute("tasks", taskService.listTasks());
         return "tasks";
     }
+
+    @GetMapping("/users")
+    public String users() {
+        return "users";
+    }
 }

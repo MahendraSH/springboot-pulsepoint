@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users — Task Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <!-- PulsePoint v2 Runtime -->
+    <script type="module">
+        import { ComponentInit as PP } from "/js/pp-reactive-v2.min.js";
+        PP.bootstrap();
+    </script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans antialiased min-h-screen selection:bg-indigo-500 selection:text-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+
+        <!-- User Header Component -->
+        <header th:replace="~{components/users/user_header :: header}"></header>
+
+        <!-- PulsePoint Reactive Component Boundary -->
+        <template pp-component="user_manager">
+            <div pp-component="user_manager" class="space-y-6">
+
+                <!-- Notifications Components -->
+                <div th:replace="~{components/ui/alert :: error(messageExpr='errorMessage', clearClickExpr='setErrorMessage(\'\')')}"></div>
+                <div th:replace="~{components/ui/alert :: success(messageExpr='successMessage', clearClickExpr='setSuccessMessage(\'\')')}"></div>
+
+                <!-- Create User Card Component -->
+                <div th:replace="~{components/users/user_form_card :: card}"></div>
+
+                <!-- User List Table Component -->
+                <section th:replace="~{components/users/user_table :: table-section}"></section>
+
+                <!-- PulsePoint Component Script -->
+                <script>
+                    const [users, setUsers] = pp.state([]);
+                    const [isLoading, setIsLoading] = pp.state(true);
+                    const [isSubmitting, setIsSubmitting] = pp.state(false);
+                    const [errorMessage, setErrorMessage] = pp.state('');
+                    const [successMessage, setSuccessMessage] = pp.state('');
+                    const [usernameError, setUsernameError] = pp.state('');
+                    const [emailError, setEmailError] = pp.state('');
+
+                    // Load initial users on mount via PulsePoint RPC
+                    pp.effect(() => {
+                        loadUsers();
+                    }, []);
+
+                    const loadUsers = async () => {
+                        setIsLoading(true);
+                        setErrorMessage('');
+                        try {
+                            const result = await pp.rpc("listUsers");
+                            setUsers(result || []);
+                        } catch (err) {
+                            setErrorMessage(err.message || 'Failed to load users via RPC');
+                        } finally {
+                            setIsLoading(false);
+                        }
+                    };
+
+                    const handleCreateUser = async (event) => {
+                        event.preventDefault();
+                        const form = event.currentTarget;
+                        setIsSubmitting(true);
+                        setErrorMessage('');
+                        setSuccessMessage('');
+                        setUsernameError('');
+                        setEmailError('');
+
+                        try {
+                            const formData = new FormData(form);
+                            const payload = Object.fromEntries(formData.entries());
+
+                            const created = await pp.rpc("createUser", payload);
+                            setUsers([...users, created]);
+                            setSuccessMessage('User "' + created.username + '" created successfully via PulsePoint RPC!');
+                            form.reset();
+                        } catch (err) {
+                            if (err.errors) {
+                                if (err.errors.username) setUsernameError(err.errors.username.join(', '));
+                                if (err.errors.email) setEmailError(err.errors.email.join(', '));
+                                const details = Object.values(err.errors).flat().join(', ');
+                                setErrorMessage('Validation error: ' + details);
+                            } else {
+                                setErrorMessage(err.message || 'Failed to create user');
+                            }
+                        } finally {
+                            setIsSubmitting(false);
+                        }
+                    };
+
+                    const handleDeleteUser = async (id) => {
+                        if (!confirm('Are you sure you want to delete user #' + id + '?')) {
+                            return;
+                        }
+                        setErrorMessage('');
+                        try {
+                            await pp.rpc("deleteUser", { id: id });
+                            setUsers(users.filter(u => u.id !== id));
+                            setSuccessMessage('User #' + id + ' deleted successfully.');
+                        } catch (err) {
+                            setErrorMessage(err.message || 'Failed to delete user');
+                        }
+                    };
+                </script>
+            </div>
+        </template>
+    </div>
+</body>
+</html>

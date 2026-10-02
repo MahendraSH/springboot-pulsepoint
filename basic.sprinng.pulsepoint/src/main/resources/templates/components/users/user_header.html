@@ -2,20 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 
-    <!-- Header Component -->
+    <!-- User Header Component -->
     <header th:fragment="header" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-8 border-b border-zinc-800">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shadow-inner">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Task Management</h1>
-                <p class="text-xs sm:text-sm text-zinc-400 mb-2">Spring Boot 3.x Backend &bull; Modular PulsePoint v2 Components</p>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">User Management</h1>
+                <p class="text-xs sm:text-sm text-zinc-400 mb-2">Spring Boot 3.x Backend &bull; PulsePoint v2 Reactive RPC</p>
                 <nav class="flex items-center gap-2">
-                    <a th:href="@{/tasks}" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm">Tasks</a>
-                    <a th:href="@{/users}" class="px-3 py-1 rounded-md text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition">Manage Users</a>
+                    <a th:href="@{/tasks}" class="px-3 py-1 rounded-md text-xs font-medium bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition">Tasks</a>
+                    <a th:href="@{/users}" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm">Manage Users</a>
                 </nav>
             </div>
         </div>

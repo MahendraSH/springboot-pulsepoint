@@ -45,7 +45,14 @@ deferred, so the component templates exist when `PP.bootstrap()` runs.
 Put each hand-authored reactive region inside a `<template pp-component>`
 boundary (below). Its content stays inert until `PP.bootstrap()` materializes
 it, preventing raw bindings from flashing and component scripts from running
-before PulsePoint starts.
+before PulsePoint starts. While a template materializes, bound `src`, `srcset`,
+`sizes`, `imagesrcset`, `imagesizes` and `poster` are parked as `pp-inert-*`
+attributes until the first render; never author `pp-inert-*`.
+
+Version: this file documents PulsePoint **v2** (`pp-reactive-v2.min.js`), the
+stable, maintained runtime. The file is updated in place at
+https://pulse-point-cdn.pages.dev/pp-reactive-v2.min.js (no numbered point
+releases); self-host a copy to pin a build.
 
 ## Component model
 
@@ -75,6 +82,15 @@ Rules:
   template scope: `{count}` in markup reads the `count` binding, `onclick="setCount(...)"`
   calls the exported setter. Top-level destructuring (array/object patterns) is
   exported too.
+- Markup and inline handlers also see the component's own `pp` (the same object
+  the script uses): `{pp.props.label}`, `onclick="pp.props.onPick()"` and
+  `onclick="pp.rpc('save')"` work in the template. A script-less component gets
+  one too. Inside slot content, `pp` is the slot AUTHOR's (React-props semantics).
+- Root attributes are evaluated in the PARENT's scope (that is where props come
+  from). When a component writes a native `on*` handler on its OWN root, the
+  server must stamp that root with `pp-event-owner="<its own id>"`; the handler
+  then runs in that instance, even when same-id siblings share the id:
+  `<form pp-component="f" pp-event-owner="f" onsubmit="{handleSubmit(event)}">`.
 - Nested components are just nested `pp-component` elements. Attributes on a
   nested component's root become `pp.props` in its script (kebab-case attribute
   names arrive camelCased: `on-select` → `pp.props.onSelect`). A brace attribute
@@ -91,6 +107,13 @@ replaces the template in place with the rendered content, so the child decides
 where children appear by where the server emits the wrapper. The alias
 `pp-owner="app"` refers to the page's root component instance. When the owner
 re-renders, its slot content re-renders with it.
+
+A child may emit the wrapper inside its own `pp-for` body (`<li><slot /></li>`):
+the children render once per row (`rows.map(() => children)`), and that loop
+opts out of per-row reuse. A wrapper may pass children on together with markup
+of its own (`<x-inner><h3>{title}</h3><slot /></x-inner>`): the server nests the
+page's `<template pp-owner="app">` inside the wrapper's `<template
+pp-owner="wrapper_id">`; each part renders in its own owner's scope.
 
 ```html
 <div pp-component="page_1">
@@ -212,6 +235,7 @@ ids merge into one boundary.
 | `pp-spread="{...obj}"` | Any element | Spread an object into attributes |
 | `<token.provider value="{v}">` | Anywhere | Context provider element |
 | `<template pp-owner="owner_id">` | Inside a child component's boundary | Slot content (children) — resolves in the owner's scope, rendered in place |
+| `pp-event-owner="own_id"` | A component root carrying its own `on*` handlers (server output) | Run those handlers in the root's own instance, not the parent |
 | `pp-ref-forward="true"` | A composition host (`display: contents` component root) | Forward a `pp-ref` through the host to the concrete root |
 | `<!--pp:id-->` … `<!--/pp-->` | Around a run of sibling roots | Fragment (multi-root component) boundary markers |
 | `pp-spa="false"` | An `<a>` | Opt one link out of SPA interception |
@@ -322,6 +346,66 @@ There is no `forwardRef` function (ref forwarding exists as the
 `pp-ref-forward="true"` attribute on a composition host — see Composition
 roots above), no `Suspense`, `lazy`, `useInsertionEffect`, `useActionState`
 or `memo()` wrapper. Do not generate them.
+
+## Native JavaScript and web APIs
+
+A component script is plain browser JavaScript evaluated in the page's global
+scope (as a function body taking `pp`). Every web API is available directly:
+WebGPU (`navigator.gpu`), Canvas/WebGL, Web Workers, WebAssembly, Web Audio,
+WebRTC and media capture, IndexedDB, observers, Web Serial/USB/HID/Bluetooth.
+There is no PulsePoint wrapper for any of them; do not invent one.
+
+The pattern: data from the server (`pp.rpc`, `pp.socket`, streaming) → `pp.state`
+(only values the markup shows) → `pp.effect` pushes it into the API, whose
+handle lives in `pp.ref`.
+
+```html
+<div pp-component="gpu_chart">
+  <canvas pp-ref="{canvas}"></canvas>
+  <button onclick="load()">Refresh</button>
+  <script>
+    const canvas = pp.ref(null);
+    const gpu = pp.ref(null);                 // device/buffers: a ref, never state
+    const [series, setSeries] = pp.state([]);
+    const [ready, setReady] = pp.state(false);
+
+    pp.effect(() => {                         // acquire once, release on unmount
+      let cancelled = false;
+      initGpu(canvas.current).then((g) => {   // plain WebGPU setup
+        if (cancelled) return g?.device.destroy();
+        gpu.current = g;
+        setReady(true);
+      });
+      return () => { cancelled = true; gpu.current?.device.destroy(); };
+    }, []);
+
+    pp.effect(() => {                         // state change -> buffer upload + draw
+      if (ready) draw(gpu.current, series);
+    }, [series, ready]);
+
+    async function load() {
+      const { values } = await pp.rpc("gpu_series", { points: 64 });
+      setSeries(values);
+    }
+  </script>
+</div>
+```
+
+Rules:
+
+- Browser objects (GPU devices, contexts, workers, audio contexts, streams,
+  observers) go in `pp.ref`. Release them in the effect cleanup
+  (`device.destroy()`, `worker.terminate()`, `audioContext.close()`,
+  `track.stop()`, `observer.disconnect()`).
+- Effect cleanups are synchronous: start async setup inside the effect and
+  guard it with a `cancelled` flag.
+- Per-frame work runs on `requestAnimationFrame` with values in refs. Never call
+  a state setter every frame.
+- Feature-detect (`if (!navigator.gpu)`) and provide a fallback; WebGPU and
+  device APIs need a secure context (HTTPS or localhost).
+- No static `import`/`export` and no top-level `await` in a component script.
+  Load libraries with `import()` inside an effect, or with a separate
+  `<script type="module">`.
 
 ## The backend wire contract
 

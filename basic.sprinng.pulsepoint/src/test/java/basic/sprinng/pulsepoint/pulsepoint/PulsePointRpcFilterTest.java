@@ -24,8 +24,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import basic.sprinng.pulsepoint.entity.TaskPriority;
-import basic.sprinng.pulsepoint.entity.TaskStatus;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -137,6 +135,7 @@ class PulsePointRpcFilterTest {
                         .content(invalidPayload))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation failed"))
+                .andExpect(jsonPath("$.requestId").exists())
                 .andExpect(jsonPath("$.errors.title[0]").value("Title is required"));
     }
 

@@ -176,9 +176,8 @@ public class PulsePointRpcFilter extends OncePerRequestFilter {
 
         Map<String, Object> errorPayload = new HashMap<>();
         errorPayload.put("error", message);
-        if (errors != null && !errors.isEmpty()) {
-            errorPayload.put("errors", errors);
-        }
+        errorPayload.put("errors", errors != null ? errors : Collections.emptyMap());
+        errorPayload.put("requestId", "req_" + java.util.UUID.randomUUID().toString().substring(0, 8));
         objectMapper.writeValue(response.getWriter(), errorPayload);
         response.getWriter().flush();
     }

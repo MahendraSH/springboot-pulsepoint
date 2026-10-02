@@ -7,34 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
-    <style>
-        [hidden] {
-            display: none !important;
-        }
-    </style>
     <!-- PulsePoint v2 Runtime -->
     <script type="module">
         import { ComponentInit as PP } from "/js/pp-reactive-v2.min.js";
@@ -79,7 +52,7 @@
 
         <!-- PulsePoint Reactive Component Boundary -->
         <template pp-component="task_manager">
-            <div class="space-y-6">
+            <div pp-component="task_manager" class="space-y-6">
 
                 <!-- Live Sync & Quick Status Bar -->
                 <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-sm">
@@ -273,7 +246,7 @@
                                         <div class="space-y-1">
                                             <h3 class="text-base font-semibold text-zinc-100">{task.title}</h3>
                                             <p class="text-xs text-zinc-500 font-mono">
-                                                ID: #{task.id} &bull; Created: {task.createdAt ? task.createdAt.replace('T', ' ').substring(0, 16) : ''}
+                                                ID: #{task.id} &bull; Created: {task.createdAt?.replace('T', ' ').substring(0, 16) || ''}
                                             </p>
                                         </div>
 
@@ -350,12 +323,19 @@
                     const inProgressCount = tasks.filter(t => t.status === 'IN_PROGRESS').length;
                     const doneCount = tasks.filter(t => t.status === 'DONE').length;
 
+                    // Socket handle ref for clean lifecycle management per PulsePoint v2 spec
+                    const socketRef = pp.ref(null);
+
                     // Initialize Named WebSocket for live multi-tab collaborative sync
                     pp.effect(() => {
                         try {
-                            pp.socket("tasks", {}, {
-                                onOpen: () => {
+                            socketRef.current = pp.socket("tasks", {}, {
+                                onOpen: ({ reconnected }) => {
                                     setLiveSyncStatus("Connected");
+                                    if (reconnected) {
+                                        // Refresh task list after reconnection to catch up on missed events
+                                        loadTasks();
+                                    }
                                 },
                                 onMessage: (msg) => {
                                     if (!msg || typeof msg !== "object") return;
@@ -370,14 +350,25 @@
                                         setSuccessMessage('⚡ Live Sync: Task #' + msg.id + ' deleted in another session');
                                     }
                                 },
-                                onClose: () => {
-                                    setLiveSyncStatus("Disconnected");
+                                onReconnecting: ({ attempt }) => {
+                                    setLiveSyncStatus("Reconnecting (" + attempt + ")...");
+                                },
+                                onClose: ({ willReconnect }) => {
+                                    setLiveSyncStatus(willReconnect ? "Reconnecting..." : "Disconnected");
                                 }
                             });
                         } catch (err) {
                             console.warn("WebSocket connection error:", err);
                             setLiveSyncStatus("Disconnected");
                         }
+
+                        // Effect cleanup to prevent socket leaks upon unmount
+                        return () => {
+                            if (socketRef.current) {
+                                socketRef.current.close();
+                                socketRef.current = null;
+                            }
+                        };
                     }, []);
 
                     // Load initial tasks on mount via PulsePoint RPC

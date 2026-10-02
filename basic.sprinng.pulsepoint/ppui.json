@@ -1,0 +1,54 @@
+{
+  "$schema": "https://pulsepoint-ui.dev/schema/ppui.json",
+  "name": "springboot-pulsepoint-basic-demo",
+  "version": "1.0.0",
+  "basePackage": "basic.sprinng.pulsepoint",
+  "javaVersion": "21",
+  "springBootVersion": "4.1.1",
+  "pulsepoint": {
+    "runtime": "pp-reactive-v2.min.js",
+    "rpc": true,
+    "sse": true,
+    "websocket": true
+  },
+  "theme": "default-dark",
+  "components": {
+    "installed": [
+      "accordion",
+      "alert",
+      "avatar",
+      "badge",
+      "button",
+      "card",
+      "checkbox",
+      "dialog",
+      "input",
+      "kbd",
+      "label",
+      "progress",
+      "select",
+      "separator",
+      "skeleton",
+      "spinner",
+      "switch",
+      "table",
+      "tabs",
+      "toast",
+      "tooltip",
+      "typography"
+    ]
+  },
+  "paths": {
+    "templates": "src/main/resources/templates",
+    "components": "src/main/resources/templates/components/ui",
+    "css": "src/main/resources/static/css",
+    "js": "src/main/resources/static/js"
+  },
+  "generation": {
+    "entityPackage": "entity",
+    "dtoPackage": "dto",
+    "servicePackage": "service",
+    "controllerPackage": "controller",
+    "repositoryPackage": "repository"
+  }
+}

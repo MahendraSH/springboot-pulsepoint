@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Separator: horizontal (default) -->
+    <div th:fragment="horizontal(label)"
+         role="separator"
+         aria-orientation="horizontal"
+         class="w-full flex items-center gap-4">
+        <div class="flex-1 h-px bg-zinc-800"></div>
+        <span th:if="${label}" class="text-xs font-medium text-zinc-500 uppercase tracking-wider" th:text="${label}">or</span>
+        <div th:if="${label}" class="flex-1 h-px bg-zinc-800"></div>
+    </div>
+
+    <!-- Separator: vertical -->
+    <div th:fragment="vertical(height)"
+         role="separator"
+         aria-orientation="vertical"
+         class="inline-block w-px bg-zinc-800"
+         th:classappend="${height ?: 'h-6'}">
+    </div>
+
+    <!-- Separator: plain line (no label) -->
+    <hr th:fragment="line"
+        role="separator"
+        class="border-0 h-px bg-zinc-800 w-full" />
+
+</body>
+</html>

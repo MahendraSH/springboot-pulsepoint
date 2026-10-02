@@ -1,7 +1,6 @@
 package basic.sprinng.pulsepoint.pulsepoint.handler;
 
 import basic.sprinng.pulsepoint.dto.CreateUserRequest;
-import basic.sprinng.pulsepoint.dto.UserResponse;
 import basic.sprinng.pulsepoint.pulsepoint.PulsePointRpcRegistry;
 import basic.sprinng.pulsepoint.pulsepoint.exception.PulsePointValidationException;
 import basic.sprinng.pulsepoint.service.UserService;

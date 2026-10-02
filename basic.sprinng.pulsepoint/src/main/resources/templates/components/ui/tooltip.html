@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Tooltip: default (top) -->
+    <div th:fragment="default(text)"
+         class="group relative inline-block">
+        <slot />
+        <div class="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-zinc-100 text-xs py-1 px-2.5 rounded-md shadow-lg whitespace-nowrap border border-zinc-700 z-50">
+            <span th:text="${text}">Tooltip text</span>
+            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-800 border-r border-b border-zinc-700 rotate-45"></div>
+        </div>
+    </div>
+
+    <!-- Tooltip: bottom -->
+    <div th:fragment="bottom(text)"
+         class="group relative inline-block">
+        <slot />
+        <div class="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-zinc-100 text-xs py-1 px-2.5 rounded-md shadow-lg whitespace-nowrap border border-zinc-700 z-50">
+            <span th:text="${text}">Tooltip text</span>
+            <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-800 border-l border-t border-zinc-700 rotate-45"></div>
+        </div>
+    </div>
+
+    <!-- Tooltip: left -->
+    <div th:fragment="left(text)"
+         class="group relative inline-block">
+        <slot />
+        <div class="pointer-events-none absolute top-1/2 -translate-y-1/2 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-zinc-100 text-xs py-1 px-2.5 rounded-md shadow-lg whitespace-nowrap border border-zinc-700 z-50">
+            <span th:text="${text}">Tooltip text</span>
+            <div class="absolute top-1/2 -translate-y-1/2 -right-1 w-2 h-2 bg-zinc-800 border-r border-b border-zinc-700 -rotate-45"></div>
+        </div>
+    </div>
+
+    <!-- Tooltip: right -->
+    <div th:fragment="right(text)"
+         class="group relative inline-block">
+        <slot />
+        <div class="pointer-events-none absolute top-1/2 -translate-y-1/2 left-full ml-2 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-800 text-zinc-100 text-xs py-1 px-2.5 rounded-md shadow-lg whitespace-nowrap border border-zinc-700 z-50">
+            <span th:text="${text}">Tooltip text</span>
+            <div class="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-zinc-800 border-l border-t border-zinc-700 -rotate-45"></div>
+        </div>
+    </div>
+
+</body>
+</html>

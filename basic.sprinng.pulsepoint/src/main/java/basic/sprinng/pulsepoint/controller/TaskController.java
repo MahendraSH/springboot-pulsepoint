@@ -35,8 +35,4 @@ public class TaskController {
         return "users";
     }
 
-    @GetMapping("/components")
-    public String components() {
-        return "components";
-    }
 }

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${component.displayName} + ' — PulsePoint UI Components'">Component — PulsePoint UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
+    <script type="module">
+        import { ComponentInit as PP } from "/js/pp-reactive-v2.min.js";
+        PP.bootstrap();
+    </script>
+    <style>
+        .code-block {
+            background: rgba(9, 9, 11, 0.8);
+            border: 1px solid rgba(63, 63, 70, 0.5);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: #a1a1aa;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .code-block .keyword { color: #c084fc; }
+        .code-block .string { color: #86efac; }
+        .code-block .tag { color: #93c5fd; }
+        .code-block .attr { color: #fbbf24; }
+        .sidebar-link {
+            display: block;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+            color: #a1a1aa;
+            border-radius: 0.375rem;
+            transition: all 0.15s;
+            border-left: 2px solid transparent;
+        }
+        .sidebar-link:hover {
+            color: #e4e4e7;
+            background: rgba(39, 39, 42, 0.4);
+        }
+        .sidebar-link.active {
+            color: #818cf8;
+            background: rgba(99, 102, 241, 0.08);
+            border-left-color: #6366f1;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans antialiased min-h-screen selection:bg-indigo-500 selection:text-white">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+        <!-- Header Bar -->
+        <header class="mb-8 pb-4 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="/components" class="text-zinc-400 hover:text-white transition-colors text-sm font-medium flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Components
+                </a>
+                <span class="text-zinc-600">/</span>
+                <span class="text-sm font-medium text-white" th:text="${component.displayName}">Component</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/tasks" class="px-3 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 rounded-lg text-xs font-medium transition-all">Back to App</a>
+            </div>
+        </header>
+
+        <div class="flex gap-8">
+
+            <!-- Sidebar -->
+            <nav class="hidden lg:block w-56 shrink-0">
+                <div class="sticky top-8 space-y-6">
+                    <div>
+                        <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 px-3">On this page</h3>
+                        <div class="space-y-0.5">
+                            <a href="#preview" class="sidebar-link">Preview</a>
+                            <a href="#installation" class="sidebar-link">Installation</a>
+                            <a href="#usage" class="sidebar-link">Usage</a>
+                            <a href="#variants" class="sidebar-link">Variants</a>
+                            <a href="#api" class="sidebar-link">API Reference</a>
+                            <a th:if="${component.reactiveExample}" href="#reactive" class="sidebar-link">Reactive Example</a>
+                        </div>
+                    </div>
+                    <div class="border-t border-zinc-800 pt-4">
+                        <h3 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 px-3">All Components</h3>
+                        <div class="space-y-0.5 max-h-64 overflow-y-auto">
+                            <a th:each="comp : ${allComponents}"
+                               th:href="@{'/components/' + ${comp.name}}"
+                               th:text="${comp.displayName}"
+                               th:classappend="${comp.name == component.name} ? ' active' : ''"
+                               class="sidebar-link">Component</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="flex-1 min-w-0 space-y-10">
+
+                <!-- Title & Description -->
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <h1 class="text-3xl font-bold text-white tracking-tight" th:text="${component.displayName}">Component</h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                              th:text="${component.category}">Category</span>
+                    </div>
+                    <p class="text-base text-zinc-400 leading-relaxed" th:text="${component.description}">Description</p>
+                </div>
+
+                <!-- Preview Section -->
+                <section id="preview">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Preview
+                    </h2>
+                    <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-8 flex items-center justify-center min-h-[120px]">
+                        <template pp-component="component_preview">
+                            <div pp-component="component_preview" class="flex flex-wrap items-center gap-4">
+
+                                <!-- Dynamic preview based on component name -->
+                                <th:block th:if="${component.name == 'button'}">
+                                    <div th:replace="~{components/ui/button :: primary(text='Primary', loadingText='Loading...', isSubmittingExpr='false', iconPath='M12 4v16m8-8H4')}"></div>
+                                    <div th:replace="~{components/ui/button :: action(label='Secondary', clickExpr='false', variantClass='bg-zinc-800 text-zinc-200 border border-zinc-700 hover:bg-zinc-700')}"></div>
+                                    <div th:replace="~{components/ui/button :: action(label='Destructive', clickExpr='false', variantClass='bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'badge'}">
+                                    <div th:replace="~{components/ui/badge :: status-badges(statusField='\'TODO\'')}"></div>
+                                    <div th:replace="~{components/ui/badge :: status-badges(statusField='\'IN_PROGRESS\'')}"></div>
+                                    <div th:replace="~{components/ui/badge :: status-badges(statusField='\'DONE\'')}"></div>
+                                    <div th:replace="~{components/ui/badge :: priority-badges(priorityField='\'HIGH\'')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'alert'}">
+                                    <div class="w-full space-y-3">
+                                        <div th:replace="~{components/ui/alert :: success(messageExpr='\'Component library loaded successfully!\'', clearClickExpr='false')}"></div>
+                                        <div th:replace="~{components/ui/alert :: error(messageExpr='\'Sample validation error message\'', clearClickExpr='false')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'input'}">
+                                    <div class="w-full max-w-sm space-y-4">
+                                        <div th:replace="~{components/ui/input :: text(id='demo-input', label='Email Address', name='email', placeholder='Enter your email...', errorExpr='false')}"></div>
+                                        <div th:replace="~{components/ui/input :: textarea(id='demo-textarea', label='Message', name='message', rows=3, placeholder='Write your message...', errorExpr='false')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'card'}">
+                                    <div class="w-full max-w-sm">
+                                        <div th:replace="~{components/ui/card :: default(title='Card Title', description='This is a card component with header and body.')}">
+                                            <p class="text-sm text-zinc-400">Card body content goes here.</p>
+                                        </div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'separator'}">
+                                    <div class="w-full max-w-sm space-y-4">
+                                        <div th:replace="~{components/ui/separator :: horizontal(label='or')}"></div>
+                                        <div th:replace="~{components/ui/separator :: line}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'spinner'}">
+                                    <div th:replace="~{components/ui/spinner :: default(size='md', label='Loading...')}"></div>
+                                    <div th:replace="~{components/ui/spinner :: dots(size='md')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'skeleton'}">
+                                    <div class="w-full max-w-sm space-y-3">
+                                        <div th:replace="~{components/ui/skeleton :: line(widthClass='w-3/4')}"></div>
+                                        <div th:replace="~{components/ui/skeleton :: line(widthClass='w-1/2')}"></div>
+                                        <div th:replace="~{components/ui/skeleton :: circle(size='md')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'avatar'}">
+                                    <div th:replace="~{components/ui/avatar :: default(name='Admin User', role='Administrator', bgClass='bg-gradient-to-tr from-indigo-600 to-purple-600')}"></div>
+                                    <div th:replace="~{components/ui/avatar :: small(name='Demo', bgClass='bg-gradient-to-tr from-emerald-600 to-teal-600')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'typography'}">
+                                    <div class="w-full space-y-3">
+                                        <div th:replace="~{components/ui/typography :: h2(text='Heading Two')}"></div>
+                                        <div th:replace="~{components/ui/typography :: p(text='This is a paragraph with body text styling.')}"></div>
+                                        <div th:replace="~{components/ui/typography :: muted(text='This is muted helper text.')}"></div>
+                                        <div th:replace="~{components/ui/typography :: code(text='pp.state(0)')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'kbd'}">
+                                    <div th:replace="~{components/ui/kbd :: default(text='⌘')}"></div>
+                                    <div th:replace="~{components/ui/kbd :: default(text='K')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'label'}">
+                                    <div class="space-y-4">
+                                        <div th:replace="~{components/ui/label :: default(forId='demo', text='Email Address', required=true)}"></div>
+                                        <div th:replace="~{components/ui/label :: inline(forId='demo2', text='Notifications', description='Receive email notifications')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'progress'}">
+                                    <div class="w-full max-w-sm">
+                                        <div th:replace="~{components/ui/progress :: default(percentExpr='65', label='Upload Progress')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'tooltip'}">
+                                    <div th:replace="~{components/ui/tooltip :: default(text='This is a tooltip')}">
+                                        <span class="px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-zinc-300 cursor-default">Hover me</span>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'switch'}">
+                                    <div th:replace="~{components/ui/switch :: default(label='Notifications', checkedExpr='switchOn', toggleExpr='setSwitchOn(!switchOn)')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'checkbox'}">
+                                    <div th:replace="~{components/ui/checkbox :: default(id='demo-cb', name='demo', label='Accept terms', description='You must accept to continue', checkedExpr='cbChecked', changeExpr='setCbChecked(!cbChecked)')}"></div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'select'}">
+                                    <div class="w-full max-w-xs">
+                                        <div th:replace="~{components/ui/select :: default(id='demo-select', label='Status', name='status', options=${{T(java.util.List).of('TODO','IN_PROGRESS','DONE')}}, placeholder='Select status...')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'table'}">
+                                    <div class="w-full">
+                                        <div th:replace="~{components/ui/table :: default(columns=${{T(java.util.List).of('Name','Status','Priority')}})}">
+                                            <tr class="hover:bg-zinc-800/40 transition-colors">
+                                                <td class="px-4 py-3 text-zinc-300">Sample Task</td>
+                                                <td class="px-4 py-3 text-zinc-300">TODO</td>
+                                                <td class="px-4 py-3 text-zinc-300">HIGH</td>
+                                            </tr>
+                                        </div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'accordion'}">
+                                    <div class="w-full max-w-md">
+                                        <div th:replace="~{components/ui/accordion :: item(id='demo-acc', title='What is PulsePoint UI?', openExpr='accOpen', toggleExpr='setAccOpen(!accOpen)')}">
+                                            PulsePoint UI is a shadcn-inspired component library for Spring Boot + Thymeleaf + PulsePoint v2.
+                                        </div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'tabs'}">
+                                    <div class="w-full max-w-md">
+                                        <div th:replace="~{components/ui/tabs :: default(tabList=${{T(java.util.List).of('Overview','Settings','Activity')}}, activeTabExpr='activeTab', changeTabExpr='setActiveTab')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'dialog'}">
+                                    <div>
+                                        <div th:replace="~{components/ui/button :: primary(text='Open Dialog', clickExpr='setDialogOpen(true)')}"></div>
+                                        <div th:replace="~{components/ui/dialog :: confirm(id='demo-dialog', title='Confirm Action', message='Are you sure you want to proceed?', openExpr='dialogOpen', onConfirmExpr='setDialogOpen(false)', onCancelExpr='setDialogOpen(false)')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <th:block th:if="${component.name == 'toast'}">
+                                    <div>
+                                        <div th:replace="~{components/ui/button :: primary(text='Show Toast', clickExpr='triggerToast()')}"></div>
+                                        <div th:replace="~{components/ui/toast :: success(messageExpr='toastMessage', visibleExpr='toastVisible', closeExpr='setToastVisible(false)')}"></div>
+                                    </div>
+                                </th:block>
+
+                                <!-- Reactive state for interactive previews -->
+                                <script>
+                                    const [switchOn, setSwitchOn] = pp.state(true);
+                                    const [cbChecked, setCbChecked] = pp.state(false);
+                                    const [accOpen, setAccOpen] = pp.state(false);
+                                    const [activeTab, setActiveTab] = pp.state('Overview');
+                                    const [dialogOpen, setDialogOpen] = pp.state(false);
+                                    const [toastVisible, setToastVisible] = pp.state(false);
+                                    const [toastMessage, setToastMessage] = pp.state('');
+
+                                    const triggerToast = () => {
+                                        setToastMessage('Operation completed successfully!');
+                                        setToastVisible(true);
+                                        setTimeout(() => setToastVisible(false), 3000);
+                                    };
+                                </script>
+                            </div>
+                        </template>
+                    </div>
+                </section>
+
+                <!-- Installation -->
+                <section id="installation">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Installation
+                    </h2>
+                    <div class="code-block" th:text="${component.installCommand}">ppui add component</div>
+                    <p class="text-xs text-zinc-500 mt-2">
+                        Source: <code class="px-1.5 py-0.5 rounded-md bg-zinc-800 border border-zinc-700/50 text-xs font-mono text-zinc-300" th:text="${component.sourceFile}">components/ui/component</code>
+                    </p>
+                </section>
+
+                <!-- Usage -->
+                <section id="usage">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Usage
+                    </h2>
+                    <pre class="code-block" th:text="${component.usageExample}">Usage example</pre>
+                </section>
+
+                <!-- Variants -->
+                <section id="variants">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Variants
+                    </h2>
+                    <div class="flex flex-wrap gap-2">
+                        <span th:each="variant : ${component.variants}"
+                              class="px-3 py-1.5 rounded-lg text-sm bg-zinc-900/60 border border-zinc-800/80 text-zinc-300 font-mono"
+                              th:text="${variant}">variant</span>
+                    </div>
+                </section>
+
+                <!-- API Reference -->
+                <section id="api">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        API Reference
+                    </h2>
+                    <div class="overflow-x-auto rounded-xl border border-zinc-800/80">
+                        <table class="w-full text-sm">
+                            <thead class="bg-zinc-900/80">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Parameter</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Type</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Default</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Required</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-zinc-800/60">
+                                <tr th:each="p : ${component.parameters}" class="hover:bg-zinc-800/40 transition-colors">
+                                    <td class="px-4 py-3">
+                                        <code class="px-1.5 py-0.5 rounded-md bg-zinc-800 border border-zinc-700/50 text-xs font-mono text-indigo-300" th:text="${p.name}">param</code>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-zinc-400 font-mono" th:text="${p.type}">String</td>
+                                    <td class="px-4 py-3 text-xs text-zinc-500 font-mono" th:text="${p['default']}">—</td>
+                                    <td class="px-4 py-3">
+                                        <span th:if="${p.required == 'true'}" class="px-2 py-0.5 rounded-md text-xs bg-amber-500/10 text-amber-300 border border-amber-500/20">required</span>
+                                        <span th:if="${p.required != 'true'}" class="text-xs text-zinc-600">optional</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-zinc-400" th:text="${p.description}">Description</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Reactive Example -->
+                <section id="reactive" th:if="${component.reactiveExample}">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        PulsePoint Reactive Example
+                    </h2>
+                    <pre class="code-block" th:text="${component.reactiveExample}">Reactive example</pre>
+                </section>
+
+                <!-- Dependencies -->
+                <section th:if="${component.dependencies != null and !component.dependencies.isEmpty()}">
+                    <h2 class="text-xl font-semibold text-white flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        Dependencies
+                    </h2>
+                    <div class="flex flex-wrap gap-2">
+                        <a th:each="dep : ${component.dependencies}"
+                           th:href="@{'/components/' + ${dep}}"
+                           class="px-3 py-1.5 rounded-lg text-sm bg-zinc-900/60 border border-zinc-800/80 text-indigo-400 hover:border-indigo-500/40 transition-all font-medium"
+                           th:text="${dep}">dependency</a>
+                    </div>
+                </section>
+
+                <!-- Navigation -->
+                <div class="pt-8 border-t border-zinc-800 flex items-center justify-between">
+                    <a href="/components" class="text-sm text-zinc-400 hover:text-white transition-colors flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        All Components
+                    </a>
+                    <span class="text-xs text-zinc-600">PulsePoint UI · Thymeleaf + PulsePoint v2</span>
+                </div>
+
+            </main>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Label: default form label -->
+    <label th:fragment="default(forId, text, required)"
+           th:for="${forId}"
+           class="block text-xs font-medium text-zinc-300 mb-1.5">
+        <span th:text="${text}">Label</span>
+        <span th:if="${required}" class="text-rose-400 ml-0.5">*</span>
+    </label>
+
+    <!-- Label: inline (side-by-side with control) -->
+    <label th:fragment="inline(forId, text, description)"
+           th:for="${forId}"
+           class="flex flex-col gap-0.5 cursor-pointer">
+        <span class="text-sm font-medium text-zinc-200" th:text="${text}">Label</span>
+        <span th:if="${description}" class="text-xs text-zinc-500" th:text="${description}">Helper text</span>
+    </label>
+
+</body>
+</html>

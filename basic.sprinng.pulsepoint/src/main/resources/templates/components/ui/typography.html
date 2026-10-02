@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Typography: h1 -->
+    <h1 th:fragment="h1(text)"
+        class="text-3xl font-bold text-white tracking-tight"
+        th:text="${text}">Heading 1</h1>
+
+    <!-- Typography: h2 -->
+    <h2 th:fragment="h2(text)"
+        class="text-2xl font-semibold text-white tracking-tight"
+        th:text="${text}">Heading 2</h2>
+
+    <!-- Typography: h3 -->
+    <h3 th:fragment="h3(text)"
+        class="text-xl font-semibold text-white tracking-tight"
+        th:text="${text}">Heading 3</h3>
+
+    <!-- Typography: h4 -->
+    <h4 th:fragment="h4(text)"
+        class="text-lg font-medium text-white"
+        th:text="${text}">Heading 4</h4>
+
+    <!-- Typography: paragraph -->
+    <p th:fragment="p(text)"
+       class="text-sm text-zinc-300 leading-relaxed"
+       th:text="${text}">Paragraph text</p>
+
+    <!-- Typography: lead (large intro text) -->
+    <p th:fragment="lead(text)"
+       class="text-lg text-zinc-400 leading-relaxed"
+       th:text="${text}">Lead paragraph text</p>
+
+    <!-- Typography: muted -->
+    <p th:fragment="muted(text)"
+       class="text-sm text-zinc-500"
+       th:text="${text}">Muted text</p>
+
+    <!-- Typography: inline code -->
+    <code th:fragment="code(text)"
+          class="px-1.5 py-0.5 rounded-md bg-zinc-800 border border-zinc-700/50 text-xs font-mono text-zinc-300"
+          th:text="${text}">code</code>
+
+    <!-- Typography: blockquote -->
+    <blockquote th:fragment="blockquote(text)"
+                class="pl-4 border-l-2 border-zinc-700 text-sm text-zinc-400 italic">
+        <p th:text="${text}">Blockquote text</p>
+    </blockquote>
+
+    <!-- Typography: section heading with indicator -->
+    <h2 th:fragment="section(text)"
+        class="text-xl font-semibold text-white flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+        <span th:text="${text}">Section Heading</span>
+    </h2>
+
+</body>
+</html>

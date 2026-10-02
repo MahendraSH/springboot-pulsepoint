@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Progress: default bar -->
+    <div th:fragment="default(percentExpr, label)" class="w-full">
+        <div th:if="${label}" class="flex justify-between items-center mb-1.5 text-xs font-medium text-zinc-400">
+            <span th:text="${label}">Progress</span>
+            <span th:text="'{' + ${percentExpr} + '} + \\'%\\''">0%</span>
+        </div>
+        <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden border border-zinc-700/40">
+            <div class="bg-indigo-500 h-full rounded-full transition-all duration-300 shadow-sm shadow-indigo-500/50"
+                 th:attr="pp-style='width: {' + ${percentExpr} + '}%'"></div>
+        </div>
+    </div>
+
+    <!-- Progress: slim (no label, thin bar) -->
+    <div th:fragment="slim(percentExpr)" class="w-full">
+        <div class="w-full bg-zinc-800 rounded-full h-1 overflow-hidden">
+            <div class="bg-indigo-500 h-full rounded-full transition-all duration-300"
+                 th:attr="pp-style='width: {' + ${percentExpr} + '}%'"></div>
+        </div>
+    </div>
+
+    <!-- Progress: with steps -->
+    <div th:fragment="steps(currentStep, totalSteps, label)" class="w-full">
+        <div class="flex justify-between items-center mb-2 text-xs font-medium text-zinc-400">
+            <span th:text="${label}">Step</span>
+            <span th:text="'{' + ${currentStep} + '} + \\' of ' + ${totalSteps} + '\\''">1 of 5</span>
+        </div>
+        <div class="flex gap-1.5">
+            <div th:each="i : ${#numbers.sequence(1, totalSteps)}"
+                 class="flex-1 h-2 rounded-full transition-all duration-300"
+                 th:classappend="'{' + ${currentStep} + ' >= ' + ${i} + '} ? \\'bg-indigo-500\\' : \\'bg-zinc-800\\''">
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress: circular -->
+    <div th:fragment="circular(percentExpr, size, label)" class="inline-flex flex-col items-center gap-2">
+        <div th:class="'relative ' + (${size == 'sm'} ? 'w-12 h-12' : (${size == 'lg'} ? 'w-24 h-24' : 'w-16 h-16'))">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="16" fill="none" stroke-width="2"
+                        class="text-zinc-800" stroke="currentColor"></circle>
+                <circle cx="18" cy="18" r="16" fill="none" stroke-width="2.5"
+                        class="text-indigo-500 transition-all duration-300"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-dasharray="100.53"
+                        th:attr="pp-style='stroke-dashoffset: {100.53 - (100.53 * ' + ${percentExpr} + ' / 100)}'"></circle>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span th:class="(${size == 'sm'} ? 'text-xs' : (${size == 'lg'} ? 'text-lg' : 'text-sm')) + ' font-medium text-zinc-200'"
+                      th:text="'{' + ${percentExpr} + '} + \\'%\\''">0%</span>
+            </div>
+        </div>
+        <span th:if="${label}" class="text-xs text-zinc-400" th:text="${label}">Progress</span>
+    </div>
+
+</body>
+</html>

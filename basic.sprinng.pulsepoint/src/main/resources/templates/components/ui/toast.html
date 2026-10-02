@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Toast: success notification -->
+    <div th:fragment="success(messageExpr, visibleExpr, closeExpr)"
+         th:attr="hidden='{!' + ${visibleExpr} + '}'"
+         class="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-zinc-900 border border-emerald-500/30 rounded-xl shadow-xl p-4 flex items-start gap-3 transition-all duration-300">
+        <div class="shrink-0 w-5 h-5 mt-0.5">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-white">Success</p>
+            <p class="text-sm text-zinc-400 mt-0.5" th:text="'{' + ${messageExpr} + '}'">Message</p>
+        </div>
+        <button type="button" th:attr="onclick=${closeExpr}"
+                class="text-zinc-400 hover:text-white transition-colors shrink-0"
+                aria-label="Close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Toast: error notification -->
+    <div th:fragment="error(messageExpr, visibleExpr, closeExpr)"
+         th:attr="hidden='{!' + ${visibleExpr} + '}'"
+         class="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-zinc-900 border border-rose-500/30 rounded-xl shadow-xl p-4 flex items-start gap-3 transition-all duration-300">
+        <div class="shrink-0 w-5 h-5 mt-0.5">
+            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-white">Error</p>
+            <p class="text-sm text-zinc-400 mt-0.5" th:text="'{' + ${messageExpr} + '}'">Message</p>
+        </div>
+        <button type="button" th:attr="onclick=${closeExpr}"
+                class="text-zinc-400 hover:text-white transition-colors shrink-0"
+                aria-label="Close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Toast: info notification -->
+    <div th:fragment="info(messageExpr, visibleExpr, closeExpr)"
+         th:attr="hidden='{!' + ${visibleExpr} + '}'"
+         class="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-zinc-900 border border-indigo-500/30 rounded-xl shadow-xl p-4 flex items-start gap-3 transition-all duration-300">
+        <div class="shrink-0 w-5 h-5 mt-0.5">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-white">Info</p>
+            <p class="text-sm text-zinc-400 mt-0.5" th:text="'{' + ${messageExpr} + '}'">Message</p>
+        </div>
+        <button type="button" th:attr="onclick=${closeExpr}"
+                class="text-zinc-400 hover:text-white transition-colors shrink-0"
+                aria-label="Close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Toast: warning notification -->
+    <div th:fragment="warning(messageExpr, visibleExpr, closeExpr)"
+         th:attr="hidden='{!' + ${visibleExpr} + '}'"
+         class="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-zinc-900 border border-amber-500/30 rounded-xl shadow-xl p-4 flex items-start gap-3 transition-all duration-300">
+        <div class="shrink-0 w-5 h-5 mt-0.5">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-white">Warning</p>
+            <p class="text-sm text-zinc-400 mt-0.5" th:text="'{' + ${messageExpr} + '}'">Message</p>
+        </div>
+        <button type="button" th:attr="onclick=${closeExpr}"
+                class="text-zinc-400 hover:text-white transition-colors shrink-0"
+                aria-label="Close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+</body>
+</html>

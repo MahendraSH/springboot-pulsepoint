@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Spinner: default circle -->
+    <div th:fragment="default(size, label, hiddenExpr)"
+         role="status"
+         class="inline-flex items-center gap-2"
+         th:attr="hidden=${hiddenExpr != null} ? '{' + ${hiddenExpr} + '}' : null">
+        <svg th:classappend="${size == 'sm'} ? 'w-4 h-4' : (${size == 'lg'} ? 'w-8 h-8' : 'w-5 h-5')"
+             class="animate-spin text-indigo-400"
+             fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span th:if="${label}" class="text-sm text-zinc-400" th:text="${label}">Loading...</span>
+        <span class="sr-only">Loading</span>
+    </div>
+
+    <!-- Spinner: dots -->
+    <div th:fragment="dots(size, hiddenExpr)"
+         role="status"
+         class="inline-flex items-center gap-1"
+         th:attr="hidden=${hiddenExpr != null} ? '{' + ${hiddenExpr} + '}' : null">
+        <span th:classappend="${size == 'sm'} ? 'w-1.5 h-1.5' : (${size == 'lg'} ? 'w-3 h-3' : 'w-2 h-2')"
+              class="rounded-full bg-indigo-400 animate-pulse" style="animation-delay: 0ms"></span>
+        <span th:classappend="${size == 'sm'} ? 'w-1.5 h-1.5' : (${size == 'lg'} ? 'w-3 h-3' : 'w-2 h-2')"
+              class="rounded-full bg-indigo-400 animate-pulse" style="animation-delay: 150ms"></span>
+        <span th:classappend="${size == 'sm'} ? 'w-1.5 h-1.5' : (${size == 'lg'} ? 'w-3 h-3' : 'w-2 h-2')"
+              class="rounded-full bg-indigo-400 animate-pulse" style="animation-delay: 300ms"></span>
+        <span class="sr-only">Loading</span>
+    </div>
+
+    <!-- Spinner: bar -->
+    <div th:fragment="bar(hiddenExpr)"
+         role="status"
+         class="w-full h-1 bg-zinc-800 rounded-full overflow-hidden"
+         th:attr="hidden=${hiddenExpr != null} ? '{' + ${hiddenExpr} + '}' : null">
+        <div class="h-full bg-indigo-500 rounded-full animate-pulse" style="width: 60%"></div>
+        <span class="sr-only">Loading</span>
+    </div>
+
+</body>
+</html>

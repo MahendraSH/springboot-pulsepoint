@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Multipart File Upload Progress Card Component -->
+    <div th:fragment="upload-card" class="p-5 rounded-2xl bg-zinc-900/90 border border-emerald-500/40 shadow-sm" hidden="{!isUploading}">
+        <div class="flex items-center justify-between mb-2">
+            <span class="inline-flex items-center gap-2 text-sm font-semibold text-emerald-300">
+                <span class="animate-pulse">📎</span> Uploading Attachment to Task #{uploadTaskId}...
+            </span>
+            <span class="text-xs font-mono font-bold text-emerald-400">{uploadProgress}%</span>
+        </div>
+        <div class="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+            <div class="bg-emerald-500 h-2 rounded-full transition-all duration-200" pp-style="'width: ' + uploadProgress + '%;'"></div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Status Badges Component -->
+    <div th:fragment="status-badges (statusField)" class="inline-flex items-center">
+        <span th:attr="hidden='{' + ${statusField} + ' !== \'TODO\'}'" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-800 text-zinc-300 border border-zinc-700/60">TODO</span>
+        <span th:attr="hidden='{' + ${statusField} + ' !== \'IN_PROGRESS\'}'" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20">IN PROGRESS</span>
+        <span th:attr="hidden='{' + ${statusField} + ' !== \'DONE\'}'" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">DONE</span>
+    </div>
+
+    <!-- Priority Badges Component -->
+    <div th:fragment="priority-badges (priorityField)" class="inline-flex items-center">
+        <span th:attr="hidden='{' + ${priorityField} + ' !== \'HIGH\'}'" class="px-2 py-0.5 rounded-md text-xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/20">HIGH</span>
+        <span th:attr="hidden='{' + ${priorityField} + ' !== \'MEDIUM\'}'" class="px-2 py-0.5 rounded-md text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">MEDIUM</span>
+        <span th:attr="hidden='{' + ${priorityField} + ' !== \'LOW\'}'" class="px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/50">LOW</span>
+    </div>
+
+</body>
+</html>

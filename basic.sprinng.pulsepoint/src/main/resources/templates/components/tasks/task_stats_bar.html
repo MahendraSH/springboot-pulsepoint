@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Live Sync & Quick Status Bar Component -->
+    <div th:fragment="bar" class="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800/80 backdrop-blur-sm">
+        <div class="flex items-center gap-2">
+            <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span class="text-xs text-zinc-400">WebSocket Live Sync:</span>
+            <span class="text-xs font-medium text-emerald-400">{liveSyncStatus}</span>
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-zinc-400">
+            <span>Total: <strong class="text-zinc-200">{tasks.length}</strong></span>
+            <span class="text-zinc-600">&bull;</span>
+            <span>Todo: <strong class="text-zinc-200">{todoCount}</strong></span>
+            <span class="text-zinc-600">&bull;</span>
+            <span>In Progress: <strong class="text-amber-300">{inProgressCount}</strong></span>
+            <span class="text-zinc-600">&bull;</span>
+            <span>Done: <strong class="text-emerald-300">{doneCount}</strong></span>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Task List Section Component -->
+    <section th:fragment="list-section" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+            <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold text-white">Tasks</h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-mono bg-zinc-800 text-zinc-300 border border-zinc-700/60">{filteredTasks.length}</span>
+            </div>
+
+            <!-- Status Filter Tabs -->
+            <div class="flex items-center gap-1.5 bg-zinc-900 p-1 rounded-lg border border-zinc-800 self-start sm:self-auto">
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('ALL')" hidden="{filter === 'ALL'}">All</button>
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'ALL'}">All</button>
+
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('TODO')" hidden="{filter === 'TODO'}">TODO</button>
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'TODO'}">TODO</button>
+
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('IN_PROGRESS')" hidden="{filter === 'IN_PROGRESS'}">In Progress</button>
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'IN_PROGRESS'}">In Progress</button>
+
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium transition duration-150" onclick="setFilter('DONE')" hidden="{filter === 'DONE'}">Done</button>
+                <button type="button" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white shadow-sm shadow-indigo-600/30" hidden="{filter !== 'DONE'}">Done</button>
+            </div>
+        </div>
+
+        <!-- Initial Loading State -->
+        <div class="p-12 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800/80" hidden="{!isLoading}">
+            <div class="inline-flex items-center gap-2 text-sm text-zinc-400">
+                <svg class="animate-spin w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading tasks via PulsePoint RPC...
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="p-12 text-center rounded-2xl bg-zinc-900/40 border border-zinc-800/80" hidden="{isLoading || tasks.length > 0}">
+            <div class="w-12 h-12 rounded-xl bg-zinc-800/60 border border-zinc-700/40 text-zinc-500 flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 022 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+            </div>
+            <p class="text-sm font-medium text-zinc-300">No tasks found</p>
+            <p class="text-xs text-zinc-500 mt-1">Create your first task using the form above to get started.</p>
+        </div>
+
+        <!-- Reactive Task Cards Grid -->
+        <div class="grid grid-cols-1 gap-3.5" hidden="{isLoading || tasks.length === 0}">
+            <template pp-for="task in filteredTasks">
+                <div key="{task.id}" class="bg-zinc-900/80 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700/80 rounded-xl p-4 sm:p-5 transition duration-150 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                                <h3 class="text-base font-semibold text-zinc-100">{task.title}</h3>
+                                <p class="text-xs text-zinc-500 font-mono">
+                                    ID: #{task.id} &bull; Created: {task.createdAt?.replace('T', ' ').substring(0, 16) || ''}
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <!-- Reusable Badges -->
+                                <div th:replace="~{components/ui/badge :: status-badges(statusField='task.status')}"></div>
+                                <div th:replace="~{components/ui/badge :: priority-badges(priorityField='task.priority')}"></div>
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-zinc-400 mt-2.5 leading-relaxed whitespace-pre-wrap" hidden="{!task.description}">{task.description}</p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 mt-4 border-t border-zinc-800/80">
+                        <!-- Move Status Controls -->
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="text-xs text-zinc-500 mr-1">Move:</span>
+                            <button type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors" hidden="{task.status === 'TODO'}" onclick="changeStatus(task.id, 'TODO')">TODO</button>
+                            <button type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors" hidden="{task.status === 'IN_PROGRESS'}" onclick="changeStatus(task.id, 'IN_PROGRESS')">IN_PROGRESS</button>
+                            <button type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-colors" hidden="{task.status === 'DONE'}" onclick="changeStatus(task.id, 'DONE')">DONE</button>
+                        </div>
+
+                        <!-- Reusable Action Buttons -->
+                        <div class="flex items-center gap-2 self-end sm:self-auto">
+                            <div th:replace="~{components/ui/button :: action(label='⚡ Audit (SSE)', clickExpr='handleStreamAudit(task.id)', variantClass='bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20')}"></div>
+                            <div th:replace="~{components/ui/button :: action(label='📎 Attach', clickExpr='promptUpload(task.id)', variantClass='bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20')}"></div>
+                            <div th:replace="~{components/ui/button :: action(label='Delete', clickExpr='handleDeleteTask(task.id)', variantClass='bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20')}"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </section>
+
+</body>
+</html>

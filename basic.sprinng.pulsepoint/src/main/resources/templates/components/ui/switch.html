@@ -3,35 +3,38 @@
 <body>
 
     <!-- Switch: default toggle -->
-    <div th:fragment="default(label, checkedExpr, toggleExpr, description)"
+    <!-- Variables: label, checkedExpr, toggleExpr, description -->
+    <div th:fragment="default"
          class="inline-flex items-center gap-3 cursor-pointer select-none"
          th:attr="onclick=${toggleExpr}">
-        <div th:class="'w-11 h-6 rounded-full transition-colors relative p-0.5 border border-zinc-700/50 ' + (${checkedExpr} ? 'bg-indigo-600' : 'bg-zinc-800')">
-            <div th:class="'w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ' + (${checkedExpr} ? 'translate-x-5' : 'translate-x-0')"></div>
+        <div th:attr="class='w-11 h-6 rounded-full transition-colors relative p-0.5 border border-zinc-700/50 {' + checkedExpr + ' ? \'bg-indigo-600\' : \'bg-zinc-800\'}'">
+            <div th:attr="class='w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 {' + checkedExpr + ' ? \'translate-x-5\' : \'translate-x-0\'}'"></div>
         </div>
         <div class="flex flex-col">
-            <span class="text-sm font-medium text-zinc-300" th:text="${label}">Toggle Switch</span>
+            <span class="text-sm font-medium text-zinc-300" th:text="${label != null ? label : 'Toggle Switch'}">Toggle Switch</span>
             <span th:if="${description}" class="text-xs text-zinc-500" th:text="${description}">Helper text</span>
         </div>
     </div>
 
     <!-- Switch: small -->
-    <div th:fragment="small(label, checkedExpr, toggleExpr)"
+    <!-- Variables: label, checkedExpr, toggleExpr -->
+    <div th:fragment="small"
          class="inline-flex items-center gap-2 cursor-pointer select-none"
          th:attr="onclick=${toggleExpr}">
-        <div th:class="'w-9 h-5 rounded-full transition-colors relative p-0.5 border border-zinc-700/50 ' + (${checkedExpr} ? 'bg-indigo-600' : 'bg-zinc-800')">
-            <div th:class="'w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 ' + (${checkedExpr} ? 'translate-x-4' : 'translate-x-0')"></div>
+        <div th:attr="class='w-9 h-5 rounded-full transition-colors relative p-0.5 border border-zinc-700/50 {' + checkedExpr + ' ? \'bg-indigo-600\' : \'bg-zinc-800\'}'">
+            <div th:attr="class='w-4 h-4 rounded-full bg-white shadow-md transform transition-transform duration-200 {' + checkedExpr + ' ? \'translate-x-4\' : \'translate-x-0\'}'"></div>
         </div>
         <span th:if="${label}" class="text-xs font-medium text-zinc-400" th:text="${label}">Toggle</span>
     </div>
 
     <!-- Switch: standalone (no label) -->
-    <div th:fragment="standalone(checkedExpr, toggleExpr, ariaLabel)"
+    <!-- Variables: checkedExpr, toggleExpr, ariaLabel -->
+    <div th:fragment="standalone"
          class="inline-flex cursor-pointer select-none"
          role="switch"
-         th:attr="onclick=${toggleExpr}, aria-checked='{' + ${checkedExpr} + '}', aria-label=${ariaLabel ?: 'Toggle'}">
-        <div th:class="'w-11 h-6 rounded-full transition-colors relative p-0.5 border border-zinc-700/50 ' + (${checkedExpr} ? 'bg-indigo-600' : 'bg-zinc-800')">
-            <div th:class="'w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ' + (${checkedExpr} ? 'translate-x-5' : 'translate-x-0')"></div>
+         th:attr="onclick=${toggleExpr}, aria-checked=${'{' + checkedExpr + '}'}, aria-label=${ariaLabel != null ? ariaLabel : 'Toggle'}">
+        <div th:attr="class='w-11 h-6 rounded-full transition-colors relative p-0.5 border border-zinc-700/50 {' + checkedExpr + ' ? \'bg-indigo-600\' : \'bg-zinc-800\'}'">
+            <div th:attr="class='w-5 h-5 rounded-full bg-white shadow-md transform transition-transform duration-200 {' + checkedExpr + ' ? \'translate-x-5\' : \'translate-x-0\'}'"></div>
         </div>
     </div>
 

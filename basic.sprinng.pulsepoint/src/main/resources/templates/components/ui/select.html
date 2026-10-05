@@ -3,27 +3,29 @@
 <body>
 
     <!-- Select: default dropdown -->
-    <div th:fragment="default(id, label, name, options, valueExpr, changeExpr, placeholder, errorExpr)">
+    <!-- Variables: id, label, name, options, valueExpr, changeExpr, placeholder, errorExpr -->
+    <div th:fragment="default">
         <label th:if="${label}" th:for="${id}" class="block text-xs font-medium text-zinc-300 mb-1.5" th:text="${label}">Label</label>
         <select th:id="${id}" th:name="${name}"
                 class="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
-                th:attr="value=${valueExpr != null} ? '{' + ${valueExpr} + '}' : null,
-                         onchange=${changeExpr}">
+                th:attr="value=${(valueExpr != null and valueExpr != '' and valueExpr != 'false') ? ('{' + valueExpr + '}') : null},
+                         onchange=${(changeExpr != null and changeExpr != '' and changeExpr != 'false') ? changeExpr : null}">
             <option th:if="${placeholder}" value="" disabled selected th:text="${placeholder}">Select...</option>
             <option th:each="opt : ${options}" th:value="${opt}" th:text="${opt}">Option</option>
         </select>
-        <small th:if="${errorExpr}" class="text-xs text-rose-400 mt-1 block"
+        <small th:if="${errorExpr != null and errorExpr != '' and errorExpr != 'false'}" class="text-xs text-rose-400 mt-1 block"
                th:attr="hidden='{!' + ${errorExpr} + '}'"
                th:text="'{' + ${errorExpr} + '}'"></small>
     </div>
 
     <!-- Select: with key-value pairs -->
-    <div th:fragment="mapped(id, label, name, options, valueExpr, changeExpr, placeholder)">
+    <!-- Variables: id, label, name, options, valueExpr, changeExpr, placeholder -->
+    <div th:fragment="mapped">
         <label th:if="${label}" th:for="${id}" class="block text-xs font-medium text-zinc-300 mb-1.5" th:text="${label}">Label</label>
         <select th:id="${id}" th:name="${name}"
                 class="w-full px-3.5 py-2 bg-zinc-950/80 border border-zinc-800 rounded-lg text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
-                th:attr="value=${valueExpr != null} ? '{' + ${valueExpr} + '}' : null,
-                         onchange=${changeExpr}">
+                th:attr="value=${(valueExpr != null and valueExpr != '' and valueExpr != 'false') ? ('{' + valueExpr + '}') : null},
+                         onchange=${(changeExpr != null and changeExpr != '' and changeExpr != 'false') ? changeExpr : null}">
             <option th:if="${placeholder}" value="" disabled selected th:text="${placeholder}">Select...</option>
             <option th:each="entry : ${options}" th:value="${entry.key}" th:text="${entry.value}">Option</option>
         </select>

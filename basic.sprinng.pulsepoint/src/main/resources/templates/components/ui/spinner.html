@@ -3,10 +3,11 @@
 <body>
 
     <!-- Spinner: default circle -->
-    <div th:fragment="default(size, label, hiddenExpr)"
+    <!-- Variables: size, label, hiddenExpr -->
+    <div th:fragment="default"
          role="status"
          class="inline-flex items-center gap-2"
-         th:attr="hidden=${hiddenExpr != null} ? '{' + ${hiddenExpr} + '}' : null">
+         th:attr="hidden=${(hiddenExpr != null and hiddenExpr != '' and hiddenExpr != 'false') ? ('{' + hiddenExpr + '}') : null}">
         <svg th:classappend="${size == 'sm'} ? 'w-4 h-4' : (${size == 'lg'} ? 'w-8 h-8' : 'w-5 h-5')"
              class="animate-spin text-indigo-400"
              fill="none" viewBox="0 0 24 24">
@@ -18,10 +19,11 @@
     </div>
 
     <!-- Spinner: dots -->
-    <div th:fragment="dots(size, hiddenExpr)"
+    <!-- Variables: size, hiddenExpr -->
+    <div th:fragment="dots"
          role="status"
          class="inline-flex items-center gap-1"
-         th:attr="hidden=${hiddenExpr != null} ? '{' + ${hiddenExpr} + '}' : null">
+         th:attr="hidden=${(hiddenExpr != null and hiddenExpr != '' and hiddenExpr != 'false') ? ('{' + hiddenExpr + '}') : null}">
         <span th:classappend="${size == 'sm'} ? 'w-1.5 h-1.5' : (${size == 'lg'} ? 'w-3 h-3' : 'w-2 h-2')"
               class="rounded-full bg-indigo-400 animate-pulse" style="animation-delay: 0ms"></span>
         <span th:classappend="${size == 'sm'} ? 'w-1.5 h-1.5' : (${size == 'lg'} ? 'w-3 h-3' : 'w-2 h-2')"
@@ -32,10 +34,11 @@
     </div>
 
     <!-- Spinner: bar -->
-    <div th:fragment="bar(hiddenExpr)"
+    <!-- Variables: hiddenExpr -->
+    <div th:fragment="bar"
          role="status"
          class="w-full h-1 bg-zinc-800 rounded-full overflow-hidden"
-         th:attr="hidden=${hiddenExpr != null} ? '{' + ${hiddenExpr} + '}' : null">
+         th:attr="hidden=${(hiddenExpr != null and hiddenExpr != '' and hiddenExpr != 'false') ? ('{' + hiddenExpr + '}') : null}">
         <div class="h-full bg-indigo-500 rounded-full animate-pulse" style="width: 60%"></div>
         <span class="sr-only">Loading</span>
     </div>

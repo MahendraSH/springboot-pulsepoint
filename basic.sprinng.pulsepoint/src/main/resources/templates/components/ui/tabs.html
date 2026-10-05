@@ -3,30 +3,33 @@
 <body>
 
     <!-- Tabs: horizontal tab bar -->
-    <div th:fragment="default(tabList, activeTabExpr, changeTabExpr)" class="border-b border-zinc-800 flex gap-1">
+    <!-- Variables: tabList, activeTabExpr, changeTabExpr -->
+    <div th:fragment="default" class="border-b border-zinc-800 flex gap-1">
         <button type="button" th:each="tab : ${tabList}"
-                th:attr="onclick=${changeTabExpr} + '(\\'' + ${tab} + '\\')'"
-                th:class="'px-4 pb-3 text-sm font-medium border-b-2 transition-all ' + (${activeTabExpr} == ${tab} ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-700')"
+                th:attr="data-tab=${tab}, data-fn=${changeTabExpr}, class='px-4 pb-3 text-sm font-medium border-b-2 transition-all cursor-pointer {' + activeTabExpr + ' === \'' + tab + '\' ? \'border-indigo-500 text-indigo-400\' : \'border-transparent text-zinc-400 hover:text-zinc-200 hover:border-zinc-700\'}'"
+                onclick="eval(this.getAttribute('data-fn') + '(\'' + this.getAttribute('data-tab') + '\')')"
                 th:text="${tab}">
             Tab
         </button>
     </div>
 
     <!-- Tabs: pill style -->
-    <div th:fragment="pills(tabList, activeTabExpr, changeTabExpr)" class="flex gap-1 p-1 bg-zinc-900/60 rounded-lg border border-zinc-800/80">
+    <!-- Variables: tabList, activeTabExpr, changeTabExpr -->
+    <div th:fragment="pills" class="flex gap-1 p-1 bg-zinc-900/60 rounded-lg border border-zinc-800/80">
         <button type="button" th:each="tab : ${tabList}"
-                th:attr="onclick=${changeTabExpr} + '(\\'' + ${tab} + '\\')'"
-                th:class="'px-3 py-1.5 text-sm font-medium rounded-md transition-all ' + (${activeTabExpr} == ${tab} ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-400 hover:text-zinc-200')"
+                th:attr="data-tab=${tab}, data-fn=${changeTabExpr}, class='px-3 py-1.5 text-sm font-medium rounded-md transition-all cursor-pointer {' + activeTabExpr + ' === \'' + tab + '\' ? \'bg-zinc-800 text-white shadow-sm\' : \'text-zinc-400 hover:text-zinc-200\'}'"
+                onclick="eval(this.getAttribute('data-fn') + '(\'' + this.getAttribute('data-tab') + '\')')"
                 th:text="${tab}">
             Tab
         </button>
     </div>
 
     <!-- Tabs: vertical -->
-    <div th:fragment="vertical(tabList, activeTabExpr, changeTabExpr)" class="flex flex-col gap-1 border-r border-zinc-800 pr-4">
+    <!-- Variables: tabList, activeTabExpr, changeTabExpr -->
+    <div th:fragment="vertical" class="flex flex-col gap-1 border-r border-zinc-800 pr-4">
         <button type="button" th:each="tab : ${tabList}"
-                th:attr="onclick=${changeTabExpr} + '(\\'' + ${tab} + '\\')'"
-                th:class="'px-3 py-2 text-left text-sm font-medium rounded-lg transition-all ' + (${activeTabExpr} == ${tab} ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40')"
+                th:attr="data-tab=${tab}, data-fn=${changeTabExpr}, class='px-3 py-2 text-left text-sm font-medium rounded-lg transition-all cursor-pointer {' + activeTabExpr + ' === \'' + tab + '\' ? \'bg-zinc-800 text-white\' : \'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40\'}'"
+                onclick="eval(this.getAttribute('data-fn') + '(\'' + this.getAttribute('data-tab') + '\')')"
                 th:text="${tab}">
             Tab
         </button>

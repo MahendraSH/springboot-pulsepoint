@@ -3,7 +3,8 @@
 <body>
 
     <!-- Dialog: default modal -->
-    <div th:fragment="default(id, title, description, openExpr, closeExpr)"
+    <!-- Variables: id, title, description, openExpr, closeExpr -->
+    <div th:fragment="default"
          th:attr="hidden='{!' + ${openExpr} + '}'"
          class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <!-- Backdrop -->
@@ -31,7 +32,8 @@
     </div>
 
     <!-- Dialog: confirm (with action buttons) -->
-    <div th:fragment="confirm(id, title, message, openExpr, onConfirmExpr, onCancelExpr, confirmText, cancelText, destructive)"
+    <!-- Variables: id, title, message, openExpr, onConfirmExpr, onCancelExpr, confirmText, cancelText, destructive -->
+    <div th:fragment="confirm"
          th:attr="hidden='{!' + ${openExpr} + '}'"
          class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <!-- Backdrop -->
@@ -45,26 +47,26 @@
                 <button type="button"
                         class="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors"
                         th:attr="onclick=${onCancelExpr}"
-                        th:text="${cancelText ?: 'Cancel'}">Cancel</button>
+                        th:text="${cancelText != null ? cancelText : 'Cancel'}">Cancel</button>
                 <button type="button"
                         th:classappend="${destructive} ? 'bg-rose-600 hover:bg-rose-500 shadow-rose-600/30' : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'"
                         class="px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-colors"
                         th:attr="onclick=${onConfirmExpr}"
-                        th:text="${confirmText ?: 'Confirm'}">Confirm</button>
+                        th:text="${confirmText != null ? confirmText : 'Confirm'}">Confirm</button>
             </div>
         </div>
     </div>
 
     <!-- Dialog: form (with form inside) -->
-    <div th:fragment="form(id, title, description, openExpr, closeExpr, submitExpr)"
+    <!-- Variables: id, title, description, openExpr, closeExpr, submitExpr -->
+    <div th:fragment="form"
          th:attr="hidden='{!' + ${openExpr} + '}'"
          class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"
              th:attr="onclick=${closeExpr}"></div>
         <!-- Content -->
-        <form class="relative bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4"
-              th:attr="onsubmit=${submitExpr}">
+        <div class="relative bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
             <div>
                 <h2 class="text-lg font-semibold text-white" th:text="${title}">Form Dialog</h2>
                 <p th:if="${description}" class="text-sm text-zinc-400 mt-1" th:text="${description}">Description</p>
@@ -81,7 +83,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
-        </form>
+        </div>
     </div>
 
 </body>

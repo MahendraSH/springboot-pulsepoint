@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!-- Radio Group: default list -->
+    <!-- Variables: name, label, options, valueExpr, changeExpr -->
+    <div th:fragment="default" class="space-y-3">
+        <label th:if="${label}" class="block text-xs font-medium text-zinc-300 mb-1" th:text="${label}">Select Option</label>
+        <div class="space-y-2">
+            <label th:each="opt : ${options}"
+                   class="flex items-center gap-3 p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800/40 cursor-pointer transition select-none">
+                <input type="radio"
+                       th:name="${name}"
+                       th:value="${opt}"
+                       th:attr="checked=${(valueExpr != null and valueExpr != '' and valueExpr != 'false') ? ('{' + valueExpr + ' === \'' + opt + '\'}') : null},
+                                onchange=${(changeExpr != null and changeExpr != '' and changeExpr != 'false') ? (changeExpr + '(\'' + opt + '\')') : null}"
+                       class="w-4 h-4 text-indigo-600 bg-zinc-950 border-zinc-700 focus:ring-indigo-500 focus:ring-2" />
+                <span class="text-sm font-medium text-zinc-200" th:text="${opt}">Option</span>
+            </label>
+        </div>
+    </div>
+
+</body>
+</html>

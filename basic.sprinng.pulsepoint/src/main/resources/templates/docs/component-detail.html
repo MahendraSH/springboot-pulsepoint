@@ -124,9 +124,16 @@
 
                                 <!-- Dynamic preview based on component name -->
                                 <th:block th:if="${component.name == 'button'}">
-                                    <div th:replace="~{components/ui/button :: primary(text='Primary', loadingText='Loading...', isSubmittingExpr='false', iconPath='M12 4v16m8-8H4')}"></div>
-                                    <div th:replace="~{components/ui/button :: action(label='Secondary', clickExpr='false', variantClass='bg-zinc-800 text-zinc-200 border border-zinc-700 hover:bg-zinc-700')}"></div>
-                                    <div th:replace="~{components/ui/button :: action(label='Destructive', clickExpr='false', variantClass='bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20')}"></div>
+                                    <div class="flex flex-wrap items-center gap-3">
+                                        <div th:replace="~{components/ui/button :: primary(text='Primary', iconPath='M5 13l4 4L19 7')}"></div>
+                                        <div th:replace="~{components/ui/button :: secondary(text='Secondary')}"></div>
+                                        <div th:replace="~{components/ui/button :: destructive(text='Destructive')}"></div>
+                                        <div th:replace="~{components/ui/button :: outline(text='Outline')}"></div>
+                                        <div th:replace="~{components/ui/button :: ghost(text='Ghost')}"></div>
+                                        <div th:replace="~{components/ui/button :: link(text='Link')}"></div>
+                                        <div th:replace="~{components/ui/button :: icon(iconPath='M12 4v16m8-8H4', title='Add item')}"></div>
+                                        <div th:replace="~{components/ui/button :: primary(text='Test Loading', loadingText='Simulating...', isSubmittingExpr='btnLoading', clickExpr='toggleBtnLoading()')}"></div>
+                                    </div>
                                 </th:block>
 
                                 <th:block th:if="${component.name == 'badge'}">
@@ -226,13 +233,13 @@
 
                                 <th:block th:if="${component.name == 'select'}">
                                     <div class="w-full max-w-xs">
-                                        <div th:replace="~{components/ui/select :: default(id='demo-select', label='Status', name='status', options=${{T(java.util.List).of('TODO','IN_PROGRESS','DONE')}}, placeholder='Select status...')}"></div>
+                                        <div th:replace="~{components/ui/select :: default(id='demo-select', label='Status', name='status', options=${demoStatusList}, placeholder='Select status...')}"></div>
                                     </div>
                                 </th:block>
 
                                 <th:block th:if="${component.name == 'table'}">
                                     <div class="w-full">
-                                        <div th:replace="~{components/ui/table :: default(columns=${{T(java.util.List).of('Name','Status','Priority')}})}">
+                                        <div th:replace="~{components/ui/table :: default(columns=${demoTableColumns})}">
                                             <tr class="hover:bg-zinc-800/40 transition-colors">
                                                 <td class="px-4 py-3 text-zinc-300">Sample Task</td>
                                                 <td class="px-4 py-3 text-zinc-300">TODO</td>
@@ -252,7 +259,7 @@
 
                                 <th:block th:if="${component.name == 'tabs'}">
                                     <div class="w-full max-w-md">
-                                        <div th:replace="~{components/ui/tabs :: default(tabList=${{T(java.util.List).of('Overview','Settings','Activity')}}, activeTabExpr='activeTab', changeTabExpr='setActiveTab')}"></div>
+                                        <div th:replace="~{components/ui/tabs :: default(tabList=${demoTabList}, activeTabExpr='activeTab', changeTabExpr='setActiveTab')}"></div>
                                     </div>
                                 </th:block>
 
@@ -279,6 +286,12 @@
                                     const [dialogOpen, setDialogOpen] = pp.state(false);
                                     const [toastVisible, setToastVisible] = pp.state(false);
                                     const [toastMessage, setToastMessage] = pp.state('');
+                                    const [btnLoading, setBtnLoading] = pp.state(false);
+
+                                    const toggleBtnLoading = () => {
+                                        setBtnLoading(true);
+                                        setTimeout(() => setBtnLoading(false), 2000);
+                                    };
 
                                     const triggerToast = () => {
                                         setToastMessage('Operation completed successfully!');
